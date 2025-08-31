@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/shyland-dev/WA-Bot/issues"
   },
-  "homepage": "https://github.com/shyland-dev/WA-Bot#readme"
+  "homepage": "https://github.com/shyland-dev/WA-Bot#readme",
+  "dependencies": {
+    "whatsapp-web.js": "^1.33.1"
+  }
 }
