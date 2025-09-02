@@ -5,7 +5,7 @@ function debugLog(message, ...args) {
   console.log(`[${TITLE}] ${message}`, ...args);
 }
 
-const { Client, LocalAuth} = require('whatsapp-web.js');
+const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 
 const client = new Client({
@@ -13,22 +13,38 @@ const client = new Client({
 });
 
 client.on('qr', (qr) => {
+  debugLog('qr', qr);
   qrcode.generate(qr, { small: true });
+});
+
+client.on('loading_screen', (percent, message) => {
+  debugLog('loading_screen', percent, message);
+});
+
+client.on('authenticated', (session) => {
+  debugLog('authenticated', session);
+});
+
+client.on('auth_failure', (message) => {
+  debugLog('auth_failure', message);
 });
 
 client.on('ready', () => {
   debugLog('ready');
 });
 
-client.on('message', msg => {
-  debugLog('message', msg);
+client.on('message', message => {
+  debugLog('message', message);
 
-  if (msg.body == '/ping') {
-    msg.reply('pong');
+  const chat = message.getChat();
+  debugLog('chat', chat);
+
+  if (message.body == '/ping') {
+    message.reply('pong');
   }
 
-  if (msg.body == '/track') {
-    msg.reply('Now tracking this chat');
+  if (message.body == '/track') {
+    message.reply('Now tracking this chat');
 
     // startTrackingChat();
   }
