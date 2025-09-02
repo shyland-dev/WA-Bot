@@ -4,8 +4,10 @@
   "description": "TODO",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "watch": "nodemon index.js"
+    "start": "node dist/index.js",
+    "watch": "nodemon dist/index.js",
+    "lint": "eslint . --ext .ts",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -27,6 +29,9 @@
     "whatsapp-web.js": "^1.33.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "@types/node": "^24.3.0",
+    "@types/qrcode-terminal": "^0.12.2",
+    "nodemon": "^3.1.10",
+    "typescript": "^5.9.2"
   }
 }

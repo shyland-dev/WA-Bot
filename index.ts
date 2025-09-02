@@ -1,31 +1,31 @@
+import { Client, LocalAuth, Message } from 'whatsapp-web.js';
+import qrcode from 'qrcode-terminal';
+
 const TITLE = "WA-Bot";
 debugLog('init');
 
-function debugLog(message, ...args) {
+function debugLog(message: string, ...args: any[]) {
   console.log(`[${TITLE}] ${message}`, ...args);
 }
-
-const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
 
 const client = new Client({
   authStrategy: new LocalAuth()
 });
 
-client.on('qr', (qr) => {
+client.on('qr', (qr: string) => {
   debugLog('qr', qr);
   qrcode.generate(qr, { small: true });
 });
 
-client.on('loading_screen', (percent, message) => {
+client.on('loading_screen', (percent: number, message: string) => {
   debugLog('loading_screen', percent, message);
 });
 
-client.on('authenticated', (session) => {
+client.on('authenticated', (session: any) => {
   debugLog('authenticated', session);
 });
 
-client.on('auth_failure', (message) => {
+client.on('auth_failure', (message: string) => {
   debugLog('auth_failure', message);
 });
 
@@ -33,7 +33,7 @@ client.on('ready', () => {
   debugLog('ready');
 });
 
-client.on('message', message => {
+client.on('message', (message: Message) => {
   debugLog('message', message);
 
   const chat = message.getChat();
@@ -50,7 +50,7 @@ client.on('message', message => {
   }
 });
 
-function startTrackingChat(chatId) {
+function startTrackingChat(chatId: any) {
   debugLog('startTrackingChat', chatId);
   // Implement tracking logic here
 }
