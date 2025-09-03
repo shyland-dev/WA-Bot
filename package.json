@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/index.js",
-    "watch": "nodemon --watch index.ts --exec \"ts-node\" index.ts",
-    "lint": "eslint . --ext .ts",
-    "build": "tsc"
+    "watch": "nodemon --watch src/index.ts --exec \"ts-node\" src/index.ts",
+    "build": "tsc",
+    "prettier": "prettier --write \"src/**/*.ts\""
   },
   "repository": {
     "type": "git",
@@ -29,15 +29,11 @@
     "whatsapp-web.js": "^1.33.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.34.0",
     "@types/node": "^24.3.0",
     "@types/qrcode-terminal": "^0.12.2",
-    "eslint": "^9.34.0",
-    "globals": "^16.3.0",
-    "jiti": "^2.5.1",
     "nodemon": "^3.1.10",
+    "prettier": "^3.6.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.42.0"
+    "typescript": "^5.9.2"
   }
 }

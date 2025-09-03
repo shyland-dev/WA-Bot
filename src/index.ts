@@ -1,7 +1,7 @@
 import { Client, LocalAuth, Message } from 'whatsapp-web.js';
 import qrcode from 'qrcode-terminal';
 
-const TITLE = "WA-Bot";
+const TITLE = 'WA-Bot';
 debugLog('init');
 
 function debugLog(message: string, ...args: any[]) {
@@ -9,7 +9,7 @@ function debugLog(message: string, ...args: any[]) {
 }
 
 const client = new Client({
-  authStrategy: new LocalAuth()
+  authStrategy: new LocalAuth(),
 });
 
 client.on('qr', (qr: string) => {
@@ -39,20 +39,24 @@ client.on('message', async (message: Message) => {
   const chat = await message.getChat();
   debugLog('chat', chat);
 
-  if (message.body == '/ping') {
-    message.reply('pong');
-  }
-
-  if (message.body == '/track') {
-    message.reply('Now tracking this chat');
-
-    // startTrackingChat();
+  switch (message.body) {
+    case '/ping':
+      message.reply('pong');
+      break;
+    case '/info':
+      message.reply('Chat info:\n' + JSON.stringify(chat, null, 2));
+      break;
+    case '/track':
+      message.reply('Now tracking this chat');
+      startTrackingChat(chat.id._serialized);
+      break;
+    default:
+      break;
   }
 });
 
 function startTrackingChat(chatId: any) {
   debugLog('startTrackingChat', chatId);
-  // Implement tracking logic here
 }
 
 client.initialize();
