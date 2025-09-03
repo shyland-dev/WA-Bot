@@ -33,10 +33,10 @@ client.on('ready', () => {
   debugLog('ready');
 });
 
-client.on('message', (message: Message) => {
+client.on('message', async (message: Message) => {
   debugLog('message', message);
 
-  const chat = message.getChat();
+  const chat = await message.getChat();
   debugLog('chat', chat);
 
   if (message.body == '/ping') {
