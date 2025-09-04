@@ -2,7 +2,13 @@ import { Message } from 'whatsapp-web.js';
 
 import { handlePingCommand } from './ping';
 import { handleInfoCommand } from './info';
-import { handleTrackCommand } from './track';
+import {
+  handleExpensesCommand,
+  activeExpensesTracking,
+  handleExpensesMessage,
+  handleExpensesTotalCommand,
+  handleExpensesResetCommand
+} from './expenses';
 
 export async function handleCommand(message: Message) {
   switch (message.body) {
@@ -12,10 +18,19 @@ export async function handleCommand(message: Message) {
     case '/info':
       await handleInfoCommand(message);
       break;
-    case '/track':
-      await handleTrackCommand(message);
+    case '/expenses':
+      await handleExpensesCommand(message);
+      break;
+    case '/expenses-total':
+      await handleExpensesTotalCommand(message);
+      break;
+    case '/expenses-reset':
+      await handleExpensesResetCommand(message);
       break;
     default:
+      if (activeExpensesTracking.has(message.from)) {
+        handleExpensesMessage(message);
+      }
       break;
   }
 }
