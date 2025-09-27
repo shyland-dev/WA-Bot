@@ -8,29 +8,65 @@ const client = new Client({
 });
 
 client.on('qr', (qr: string) => {
-  debugLog('qr', qr);
-  qrcode.generate(qr, { small: true });
+  try {
+    debugLog('qr', qr);
+    qrcode.generate(qr, { small: true });
+  } catch (error) {
+    debugLog('Error generating QR code:', error);
+  }
 });
 
 client.on('loading_screen', (percent: number, message: string) => {
-  debugLog('loading_screen', percent, message);
+  try {
+    debugLog('loading_screen', percent, message);
+  } catch (error) {
+    debugLog('Error in loading screen:', error);
+  }
 });
 
 client.on('authenticated', (session: any) => {
-  debugLog('authenticated', session);
+  try {
+    debugLog('authenticated', session);
+  } catch (error) {
+    debugLog('Error in authenticated event:', error);
+  }
 });
 
 client.on('auth_failure', (message: string) => {
-  debugLog('auth_failure', message);
+  try {
+    debugLog('auth_failure', message);
+  } catch (error) {
+    debugLog('Error in auth failure event:', error);
+  }
 });
 
 client.on('ready', () => {
-  debugLog('ready');
+  try {
+    debugLog('ready');
+  } catch (error) {
+    debugLog('Error in ready event:', error);
+  }
 });
 
 client.on('message', async (message: Message) => {
-  debugLog('message', message);
-  await handleCommand(message);
+  try {
+    debugLog('message', message);
+    await handleCommand(message);
+  } catch (error) {
+    debugLog('Error handling message:', error);
+  }
 });
 
-client.initialize();
+client.on('disconnected', (reason: string) => {
+  try {
+    debugLog('Client was disconnected:', reason);
+  } catch (error) {
+    debugLog('Error in disconnected event:', error);
+  }
+});
+
+try {
+  client.initialize();
+} catch (error) {
+  debugLog('Error initializing client:', error);
+}
