@@ -1,6 +1,6 @@
 import { Client, LocalAuth, Message } from 'whatsapp-web.js';
 import qrcode from 'qrcode-terminal';
-import { handleCommand } from './commands';
+import { handleCommand } from './commands/_index';
 import { debugLog } from './utils/debug';
 
 const client = new Client({

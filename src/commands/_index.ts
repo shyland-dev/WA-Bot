@@ -1,5 +1,7 @@
 import { Message } from 'whatsapp-web.js';
 
+import { debugLog } from '../utils/debug';
+import { handleHelpCommand } from './help';
 import { handlePingCommand } from './ping';
 import { handleInfoCommand } from './info';
 import {
@@ -9,11 +11,13 @@ import {
   handleExpensesTotalCommand,
   handleExpensesResetCommand,
 } from './expenses';
-import { debugLog } from '../utils/debug';
 
 export async function handleCommand(message: Message) {
   try {
     switch (message.body) {
+      case '/help':
+        await handleHelpCommand(message);
+        break;
       case '/ping':
         await handlePingCommand(message);
         break;
