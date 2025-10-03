@@ -140,3 +140,7 @@ vite.config.ts.timestamp-*
 
 /.wwebjs_auth
 /.wwebjs_cache
+
+# Ignore all files in data directory except .gitkeep
+data/*
+!data/.gitkeep
