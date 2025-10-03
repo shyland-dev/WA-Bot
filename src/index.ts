@@ -43,6 +43,25 @@ client.on('auth_failure', (message: string) => {
 client.on('ready', () => {
   try {
     debugLog('ready');
+
+    const lastActivation = new Date().toLocaleString();
+    // Set the bot's status message
+    client.setStatus('Last activation: ' + lastActivation)
+    .then(() => {
+      debugLog('Status set successfully: ' + lastActivation);
+    })
+    .catch((error) => {
+      debugLog('Error setting status:', error);
+    });
+
+    // Set bot as ONLINE
+    client.sendPresenceAvailable()
+    .then(() => {
+      debugLog('Presence set to available');
+    })
+    .catch((error) => {
+      debugLog('Error setting presence:', error);
+    });
   } catch (error) {
     debugLog('Error in ready event:', error);
   }
