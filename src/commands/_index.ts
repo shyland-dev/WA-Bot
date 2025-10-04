@@ -4,6 +4,7 @@ import { debugLog } from '../utils/debug';
 import { handleHelpCommand } from './help';
 import { handlePingCommand } from './ping';
 import { handleInfoCommand } from './info';
+import { handleSourceCommand } from './source';
 import {
   handleExpensesCommand,
   activeExpensesTracking,
@@ -23,6 +24,9 @@ export async function handleCommand(message: Message) {
         break;
       case '/info':
         await handleInfoCommand(message);
+        break;
+      case '/source':
+        await handleSourceCommand(message);
         break;
       case '/expenses':
         await handleExpensesCommand(message);
