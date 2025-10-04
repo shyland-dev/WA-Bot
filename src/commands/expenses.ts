@@ -14,8 +14,8 @@ interface ChatExpenses {
   total: number;
 }
 
-// File paths for persistence
-const DATA_DIR = path.join(__dirname, '../../data');
+// File paths for persistence - use process.cwd() instead of __dirname
+const DATA_DIR = path.join(process.cwd(), 'data');
 const ACTIVE_TRACKING_FILE = path.join(DATA_DIR, 'active-tracking.json');
 const EXPENSES_DATA_FILE = path.join(DATA_DIR, 'expenses-data.json');
 
