@@ -1,5 +1,10 @@
 # WA-Bot
 
+## Ubuntu/Debian Deps
+```bash
+sudo apt install -y chromium-browser
+```
+
 - [x] Expense Tracking
 - [x] Help Command
 - [x] Info Command

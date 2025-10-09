@@ -23,6 +23,7 @@ const client = new Client({
       '--disable-gpu',
       '--no-zygote',
     ],
+    executablePath: '/usr/bin/chromium-browser'
   },
   takeoverOnConflict: true
 });
@@ -64,6 +65,17 @@ client.on('ready', async () => {
   try {
     debugLog('Bot is ready and connected to WhatsApp!');
     
+    // Set presence to online
+    await client.sendPresenceAvailable();
+    debugLog('Presence set to online');
+
+    // Set status message
+    const currentTime = new Date().toLocaleString();
+    const statusMessage = '🤖 Bot is online! Type /help for commands. | Last active: ' + currentTime;
+    debugLog('Setting status message to:', statusMessage);
+    await client.setStatus(statusMessage);
+    debugLog('Status message updated successfully');
+
     // Get client info
     try {
       const clientInfo = client.info;
