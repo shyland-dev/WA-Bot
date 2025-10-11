@@ -5,6 +5,8 @@ import { handleHelpCommand } from './help';
 import { handlePingCommand } from './ping';
 import { handleInfoCommand } from './info';
 import { handleSourceCommand } from './source';
+import { handleUptimeCommand } from './uptime';
+import { handleVersionCommand } from './version';
 import {
   handleExpensesCommand,
   activeExpensesTracking,
@@ -27,6 +29,12 @@ export async function handleCommand(message: Message) {
         break;
       case '/source':
         await handleSourceCommand(message);
+        break;
+      case '/uptime':
+        await handleUptimeCommand(message);
+        break;
+      case '/version':
+        await handleVersionCommand(message);
         break;
       case '/expenses':
         await handleExpensesCommand(message);

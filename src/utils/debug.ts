@@ -5,6 +5,15 @@ const TITLE = 'WA-Bot';
 const LOGS_DIR = path.join(process.cwd(), 'logs');
 const DEBUG_LOG_FILE = path.join(LOGS_DIR, 'debug.log');
 
+// Store original console methods
+const originalConsole = {
+  log: console.log,
+  error: console.error,
+  warn: console.warn,
+  info: console.info,
+  debug: console.debug
+};
+
 // Ensure logs directory exists
 function ensureLogsDir() {
   if (!fs.existsSync(LOGS_DIR)) {
@@ -18,17 +27,119 @@ function getTimestamp(): string {
 }
 
 // Write to log file
-function writeToFile(message: string) {
+function writeToFile(message: string, level: string = 'INFO') {
   try {
     ensureLogsDir();
     const timestamp = getTimestamp();
-    const logEntry = `[${timestamp}] ${message}\n`;
+    const logEntry = `[${timestamp}] [${level}] ${message}\n`;
     fs.appendFileSync(DEBUG_LOG_FILE, logEntry, 'utf8');
   } catch (error) {
-    // If file writing fails, at least try console.error
-    console.error('Failed to write to debug log file:', error);
+    // If file writing fails, use original console.error
+    originalConsole.error('Failed to write to debug log file:', error);
   }
 }
+
+// Override console methods to capture all output
+function overrideConsole() {
+  console.log = (...args: any[]) => {
+    const message = args.map(arg => {
+      if (typeof arg === 'object') {
+        try {
+          return JSON.stringify(arg, null, 2);
+        } catch {
+          return String(arg);
+        }
+      }
+      return String(arg);
+    }).join(' ');
+    
+    writeToFile(message, 'LOG');
+    originalConsole.log(...args);
+  };
+
+  console.error = (...args: any[]) => {
+    const message = args.map(arg => {
+      if (typeof arg === 'object') {
+        try {
+          return JSON.stringify(arg, null, 2);
+        } catch {
+          return String(arg);
+        }
+      }
+      return String(arg);
+    }).join(' ');
+    
+    writeToFile(message, 'ERROR');
+    originalConsole.error(...args);
+  };
+
+  console.warn = (...args: any[]) => {
+    const message = args.map(arg => {
+      if (typeof arg === 'object') {
+        try {
+          return JSON.stringify(arg, null, 2);
+        } catch {
+          return String(arg);
+        }
+      }
+      return String(arg);
+    }).join(' ');
+    
+    writeToFile(message, 'WARN');
+    originalConsole.warn(...args);
+  };
+
+  console.info = (...args: any[]) => {
+    const message = args.map(arg => {
+      if (typeof arg === 'object') {
+        try {
+          return JSON.stringify(arg, null, 2);
+        } catch {
+          return String(arg);
+        }
+      }
+      return String(arg);
+    }).join(' ');
+    
+    writeToFile(message, 'INFO');
+    originalConsole.info(...args);
+  };
+
+  console.debug = (...args: any[]) => {
+    const message = args.map(arg => {
+      if (typeof arg === 'object') {
+        try {
+          return JSON.stringify(arg, null, 2);
+        } catch {
+          return String(arg);
+        }
+      }
+      return String(arg);
+    }).join(' ');
+    
+    writeToFile(message, 'DEBUG');
+    originalConsole.debug(...args);
+  };
+}
+
+// Capture uncaught exceptions and unhandled rejections
+function setupGlobalErrorHandlers() {
+  process.on('uncaughtException', (error) => {
+    const message = `Uncaught Exception: ${error.message}\nStack: ${error.stack}`;
+    writeToFile(message, 'FATAL');
+    originalConsole.error('Uncaught Exception:', error);
+  });
+
+  process.on('unhandledRejection', (reason, promise) => {
+    const message = `Unhandled Rejection at: ${promise}, reason: ${reason}`;
+    writeToFile(message, 'ERROR');
+    originalConsole.error('Unhandled Rejection:', reason);
+  });
+}
+
+// Initialize console overrides and error handlers
+overrideConsole();
+setupGlobalErrorHandlers();
 
 export function debugLog(message: string, ...args: any[]) {
   try {
@@ -49,18 +160,15 @@ export function debugLog(message: string, ...args: any[]) {
       fullMessage += ` ${formattedArgs}`;
     }
 
-    // Write to console
+    // Write to console (which will be captured by our override)
     console.log(fullMessage);
-    
-    // Write to file
-    writeToFile(fullMessage);
     
   } catch (error) {
     // Fallback logging if main logic fails
     try {
       const fallbackMessage = `[${TITLE}] Debug log error: ${error}`;
-      console.error(fallbackMessage);
-      writeToFile(fallbackMessage);
+      originalConsole.error(fallbackMessage);
+      writeToFile(fallbackMessage, 'ERROR');
     } catch {
       // Silent fail if even fallback fails
     }
@@ -91,7 +199,7 @@ export function rotateDebugLogs(maxSizeInMB: number = 10) {
         const backupFile = path.join(LOGS_DIR, `debug.log.backup.${Date.now()}`);
         fs.renameSync(DEBUG_LOG_FILE, backupFile);
         
-        debugLog(`Debug log rotated. Backup created: ${backupFile}`);
+        console.log(`[${TITLE}] Debug log rotated. Backup created: ${backupFile}`);
         
         // Keep only the last 3 backup files
         const backupFiles = fs.readdirSync(LOGS_DIR)
@@ -110,3 +218,6 @@ export function rotateDebugLogs(maxSizeInMB: number = 10) {
     console.error(`[${TITLE}] Failed to rotate debug log:`, error);
   }
 }
+
+// Export original console methods in case they're needed
+export { originalConsole };

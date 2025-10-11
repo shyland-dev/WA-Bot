@@ -1,6 +1,7 @@
 import { Client, LocalAuth, Message } from 'whatsapp-web.js';
 import qrcode from 'qrcode-terminal';
 import { handleCommand } from './commands/_index';
+import { saveReadyTimestamp } from './commands/uptime';
 import { debugLog, rotateDebugLogs } from './utils/debug';
 
 // Rotate logs on startup if they're too large
@@ -65,6 +66,9 @@ client.on('ready', async () => {
   try {
     debugLog('Bot is ready and connected to WhatsApp!');
     
+    // Save ready timestamp for uptime tracking
+    saveReadyTimestamp();
+    
     // Set presence to online
     await client.sendPresenceAvailable();
     debugLog('Presence set to online');
@@ -75,6 +79,7 @@ client.on('ready', async () => {
     debugLog('Setting status message to:', statusMessage);
     await client.setStatus(statusMessage);
     debugLog('Status message updated successfully');
+
 
     // Get client info
     try {

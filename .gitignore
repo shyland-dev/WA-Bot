@@ -144,3 +144,6 @@ vite.config.ts.timestamp-*
 # Ignore all files in data directory except .gitkeep
 data/*
 !data/.gitkeep
+
+# Ignore core
+core

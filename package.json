@@ -1,6 +1,6 @@
 {
   "name": "wa-bot",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "TODO",
   "main": "dist/index.js",
   "type": "commonjs",
@@ -9,16 +9,9 @@
     "watch": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
     "build": "tsc",
     "prettier": "prettier --write \"src/**/*.ts\"",
-    "pm2:start": "pm2 start ecosystem.config.js --only wa-bot && pm2 save",
-    "pm2:stop": "pm2 stop wa-bot || true",
-    "pm2:delete": "pm2 delete wa-bot || true && pm2 save",
-    "pm2:clean": "rm -rf .wwebjs_auth .wwebjs_cache",
-    "pm2:reset": "npm run pm2:delete && npm run pm2:clean",
-    "pm2:prod": "npm run build && npm run pm2:reset && npm run pm2:start && pm2 startup",
-    "logs:clear": "rm -f logs/debug.log",
-    "logs:view": "tail -f logs/debug.log",
-    "logs:view-all": "cat logs/debug.log",
-    "clear-all": "npm run logs:clear && npm run pm2:clean"
+    "pm2": "npm run build && pm2 delete wa-bot 2>/dev/null || true && pm2 start ecosystem.config.js",
+    "clear-logs": "rm -rf logs/*.log*",
+    "reset": "pm2 delete wa-bot 2>/dev/null || true && rm -rf .wwebjs_auth .wwebjs_cache data/*.json logs/*.log*"
   },
   "repository": {
     "type": "git",
