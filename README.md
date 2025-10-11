@@ -10,4 +10,6 @@ sudo apt install -y chromium-browser
 - [x] Info Command
 - [x] Ping Command
 - [x] Source Command
+- [x] Uptime Command
+- [x] Version Command
 - [ ] ???
