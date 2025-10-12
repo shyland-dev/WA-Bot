@@ -16,17 +16,15 @@ const client = new Client({
   },
   puppeteer: {
     headless: true,
+    // executablePath: '/usr/bin/chromium-browser',
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
-      '--disable-extensions',
       '--disable-gpu',
       '--no-zygote',
     ],
-    executablePath: '/usr/bin/chromium-browser'
   },
-  takeoverOnConflict: true
 });
 
 client.on('qr', (qr: string) => {
@@ -65,27 +63,30 @@ client.on('auth_failure', (message: string) => {
 client.on('ready', async () => {
   try {
     debugLog('Bot is ready and connected to WhatsApp!');
-    
+
     // Save ready timestamp for uptime tracking
     saveReadyTimestamp();
-    
+
     // Set presence to online
     await client.sendPresenceAvailable();
     debugLog('Presence set to online');
 
     // Set status message
     const currentTime = new Date().toLocaleString();
-    const statusMessage = '🤖 Bot is online! Type /help for commands. | Last active: ' + currentTime;
+    const statusMessage =
+      '🤖 Bot is online! Type /help for commands. | Last active: ' +
+      currentTime;
     debugLog('Setting status message to:', statusMessage);
     await client.setStatus(statusMessage);
     debugLog('Status message updated successfully');
-
 
     // Get client info
     try {
       const clientInfo = client.info;
       if (clientInfo) {
-        debugLog(`Connected as: ${clientInfo.pushname} (${clientInfo.wid.user})`);
+        debugLog(
+          `Connected as: ${clientInfo.pushname} (${clientInfo.wid.user})`,
+        );
       }
     } catch (infoError) {
       debugLog('Could not get client info:', infoError);
@@ -101,7 +102,7 @@ client.on('message', async (message: Message) => {
     if (message.fromMe) {
       return;
     }
-    
+
     debugLog(`Message received from ${message.from}: ${message.body}`);
     await handleCommand(message);
   } catch (error) {

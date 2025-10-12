@@ -52,7 +52,7 @@ function overrideConsole() {
       }
       return String(arg);
     }).join(' ');
-    
+
     writeToFile(message, 'LOG');
     originalConsole.log(...args);
   };
@@ -68,7 +68,7 @@ function overrideConsole() {
       }
       return String(arg);
     }).join(' ');
-    
+
     writeToFile(message, 'ERROR');
     originalConsole.error(...args);
   };
@@ -84,7 +84,7 @@ function overrideConsole() {
       }
       return String(arg);
     }).join(' ');
-    
+
     writeToFile(message, 'WARN');
     originalConsole.warn(...args);
   };
@@ -100,7 +100,7 @@ function overrideConsole() {
       }
       return String(arg);
     }).join(' ');
-    
+
     writeToFile(message, 'INFO');
     originalConsole.info(...args);
   };
@@ -116,35 +116,19 @@ function overrideConsole() {
       }
       return String(arg);
     }).join(' ');
-    
+
     writeToFile(message, 'DEBUG');
     originalConsole.debug(...args);
   };
 }
 
-// Capture uncaught exceptions and unhandled rejections
-function setupGlobalErrorHandlers() {
-  process.on('uncaughtException', (error) => {
-    const message = `Uncaught Exception: ${error.message}\nStack: ${error.stack}`;
-    writeToFile(message, 'FATAL');
-    originalConsole.error('Uncaught Exception:', error);
-  });
-
-  process.on('unhandledRejection', (reason, promise) => {
-    const message = `Unhandled Rejection at: ${promise}, reason: ${reason}`;
-    writeToFile(message, 'ERROR');
-    originalConsole.error('Unhandled Rejection:', reason);
-  });
-}
-
-// Initialize console overrides and error handlers
+// Initialize console overrides
 overrideConsole();
-setupGlobalErrorHandlers();
 
 export function debugLog(message: string, ...args: any[]) {
   try {
     let fullMessage = `[${TITLE}] ${message}`;
-    
+
     // Format additional arguments
     if (args.length > 0) {
       const formattedArgs = args.map(arg => {
@@ -162,16 +146,10 @@ export function debugLog(message: string, ...args: any[]) {
 
     // Write to console (which will be captured by our override)
     console.log(fullMessage);
-    
+
   } catch (error) {
     // Fallback logging if main logic fails
-    try {
-      const fallbackMessage = `[${TITLE}] Debug log error: ${error}`;
-      originalConsole.error(fallbackMessage);
-      writeToFile(fallbackMessage, 'ERROR');
-    } catch {
-      // Silent fail if even fallback fails
-    }
+    originalConsole.error('Debug log error:', error);
   }
 }
 
@@ -193,20 +171,20 @@ export function rotateDebugLogs(maxSizeInMB: number = 10) {
     if (fs.existsSync(DEBUG_LOG_FILE)) {
       const stats = fs.statSync(DEBUG_LOG_FILE);
       const fileSizeInMB = stats.size / (1024 * 1024);
-      
+
       if (fileSizeInMB > maxSizeInMB) {
         // Create backup and start fresh
         const backupFile = path.join(LOGS_DIR, `debug.log.backup.${Date.now()}`);
         fs.renameSync(DEBUG_LOG_FILE, backupFile);
-        
+
         console.log(`[${TITLE}] Debug log rotated. Backup created: ${backupFile}`);
-        
+
         // Keep only the last 3 backup files
         const backupFiles = fs.readdirSync(LOGS_DIR)
           .filter(file => file.startsWith('debug.log.backup.'))
           .sort()
           .reverse();
-          
+
         if (backupFiles.length > 3) {
           backupFiles.slice(3).forEach(file => {
             fs.unlinkSync(path.join(LOGS_DIR, file));
