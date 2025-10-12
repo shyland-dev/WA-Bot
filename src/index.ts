@@ -91,6 +91,24 @@ client.on('ready', async () => {
     } catch (infoError) {
       debugLog('Could not get client info:', infoError);
     }
+
+    // On every 15 minutes, send a message to self to keep the session alive
+    const imAlive = async () => {
+      try {
+        const chat = await client.getChatById("120363403106512185@g.us");
+        if (chat) {
+          await client.sendMessage(chat.id._serialized, '🤖 Bot is still alive!');
+          debugLog('Sent keep-alive message to self');
+        }
+      } catch (keepAliveError) {
+        debugLog('Error sending keep-alive message:', keepAliveError);
+      }
+    }
+
+    await imAlive(); // Initial call
+    setInterval(async () => {
+      await imAlive();
+    }, 15 * 60 * 1000);
   } catch (error) {
     debugLog('Error in ready event:', error);
   }
