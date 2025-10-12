@@ -1,6 +1,6 @@
 {
   "name": "wa-bot",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "TODO",
   "main": "dist/index.js",
   "type": "commonjs",
@@ -9,10 +9,9 @@
     "watch": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
     "build": "tsc",
     "prettier": "prettier --write \"src/**/*.ts\"",
-    "pm2": "npm run build && pm2 delete wa-bot 2>/dev/null || true && pm2 start ecosystem.config.js",
+    "pm2": "npm run build && pm2 delete wa-bot >/dev/null 2>&1 || true && pm2 start ecosystem.config.js && pm2 save",
     "clear-logs": "rm -rf logs/*.log*",
-    "reset": "pm2 delete wa-bot 2>/dev/null || true && rm -rf .wwebjs_auth .wwebjs_cache data/*.json logs",
-    "kill-chrome": "pkill -f chromium-browser || true"
+    "reset": "pm2 delete wa-bot 2>/dev/null || true && rm -rf .wwebjs_auth .wwebjs_cache data/*.json logs"
   },
   "repository": {
     "type": "git",
