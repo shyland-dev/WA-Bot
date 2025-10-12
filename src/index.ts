@@ -92,7 +92,8 @@ client.on('ready', async () => {
       debugLog('Could not get client info:', infoError);
     }
 
-    // On every 15 minutes, send a message to self to keep the session alive
+    // On every X minutes, send a message to self to keep the session alive
+    const minutesTimeout = 5;
     const imAlive = async () => {
       try {
         const chat = await client.getChatById("120363403106512185@g.us");
@@ -108,7 +109,7 @@ client.on('ready', async () => {
     await imAlive(); // Initial call
     setInterval(async () => {
       await imAlive();
-    }, 15 * 60 * 1000);
+    }, minutesTimeout * 60 * 1000);
   } catch (error) {
     debugLog('Error in ready event:', error);
   }
