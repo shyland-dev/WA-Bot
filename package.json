@@ -11,7 +11,7 @@
     "prettier": "prettier --write \"src/**/*.ts\"",
     "pm2": "npm run build && pm2 delete wa-bot >/dev/null 2>&1 || true && pm2 start ecosystem.config.js && pm2 save",
     "clear-logs": "rm -rf logs/*.log*",
-    "reset": "pm2 delete wa-bot 2>/dev/null || true && rm -rf .wwebjs_auth .wwebjs_cache data/*.json logs core"
+    "reset": "pm2 delete wa-bot 2>/dev/null || true && rm -rf .wwebjs_auth .wwebjs_cache data/*.json logs core dist"
   },
   "repository": {
     "type": "git",
