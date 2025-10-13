@@ -3,6 +3,7 @@ import qrcode from 'qrcode-terminal';
 import { handleCommand } from './commands/_index';
 import { saveReadyTimestamp } from './commands/uptime';
 import { debugLog, rotateDebugLogs } from './utils/debug';
+import { debug } from 'console';
 
 // Rotate logs on startup if they're too large
 rotateDebugLogs(10); // Rotate if debug.log is larger than 10MB
@@ -110,6 +111,7 @@ client.on('ready', async () => {
     setInterval(async () => {
       await imAlive();
     }, minutesTimeout * 60 * 1000);
+    debugLog(`Keep-alive messages set every ${minutesTimeout} minutes`);
   } catch (error) {
     debugLog('Error in ready event:', error);
   }
