@@ -94,11 +94,11 @@ client.on('ready', async () => {
 
     // On every X minutes, send a message to self to keep the session alive
     const minutesTimeout = 5;
-    const imAlive = async () => {
+    const imAlive = async (msg = '🤖 Bot is still alive!') => {
       try {
         const chat = await client.getChatById("120363403106512185@g.us");
         if (chat) {
-          await client.sendMessage(chat.id._serialized, '🤖 Bot is still alive!');
+          await client.sendMessage(chat.id._serialized, msg);
           debugLog('Sent keep-alive message to self');
         }
       } catch (keepAliveError) {
@@ -106,7 +106,7 @@ client.on('ready', async () => {
       }
     }
 
-    await imAlive(); // Initial call
+    await imAlive('🤖 Bot initiated!'); // Initial call
     setInterval(async () => {
       await imAlive();
     }, minutesTimeout * 60 * 1000);
