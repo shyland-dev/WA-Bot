@@ -13,9 +13,5 @@ const HELP_MESSAGE = `Here are the available commands:
 `;
 
 export async function handleHelpCommand(message: Message) {
-  try {
-    await message.reply(HELP_MESSAGE);
-  } catch (error) {
-    debugLog('Error in help command:', error);
-  }
+  await message.reply(HELP_MESSAGE);
 }

@@ -20,28 +20,20 @@ function ensureDataDir() {
 
 // Save ready timestamp to JSON
 export function saveReadyTimestamp() {
-  try {
-    ensureDataDir();
-    const uptimeData: UptimeData = {
-      readyTimestamp: new Date().toISOString()
-    };
-    fs.writeFileSync(UPTIME_FILE, JSON.stringify(uptimeData, null, 2));
-    debugLog('Saved ready timestamp:', uptimeData.readyTimestamp);
-  } catch (error) {
-    debugLog('Error saving ready timestamp:', error);
-  }
+  ensureDataDir();
+  const uptimeData: UptimeData = {
+    readyTimestamp: new Date().toISOString()
+  };
+  fs.writeFileSync(UPTIME_FILE, JSON.stringify(uptimeData, null, 2));
+  debugLog('Saved ready timestamp:', uptimeData.readyTimestamp);
 }
 
 // Load ready timestamp from JSON
 function loadReadyTimestamp(): Date | null {
-  try {
-    if (fs.existsSync(UPTIME_FILE)) {
-      const data = fs.readFileSync(UPTIME_FILE, 'utf8');
-      const uptimeData: UptimeData = JSON.parse(data);
-      return new Date(uptimeData.readyTimestamp);
-    }
-  } catch (error) {
-    debugLog('Error loading ready timestamp:', error);
+  if (fs.existsSync(UPTIME_FILE)) {
+    const data = fs.readFileSync(UPTIME_FILE, 'utf8');
+    const uptimeData: UptimeData = JSON.parse(data);
+    return new Date(uptimeData.readyTimestamp);
   }
   return null;
 }
@@ -81,23 +73,14 @@ function formatUptime(startTime: Date): string {
 }
 
 export async function handleUptimeCommand(message: Message) {
-  try {
-    const readyTimestamp = loadReadyTimestamp();
-    
-    if (!readyTimestamp) {
-      await message.reply('No uptime data available. The bot may need to restart to track uptime.');
-      return;
-    }
-    
-    const uptimeString = formatUptime(readyTimestamp);
-    await message.reply(`Bot uptime: ${uptimeString}`);
-    debugLog('Sent uptime response:', uptimeString);
-  } catch (error) {
-    debugLog('Error in uptime command:', error);
-    try {
-      await message.reply('Sorry, there was an error getting the uptime information.');
-    } catch (replyError) {
-      debugLog('Error sending error reply in uptime command:', replyError);
-    }
+  const readyTimestamp = loadReadyTimestamp();
+  
+  if (!readyTimestamp) {
+    await message.reply('No uptime data available. The bot may need to restart to track uptime.');
+    return;
   }
+  
+  const uptimeString = formatUptime(readyTimestamp);
+  await message.reply(`Bot uptime: ${uptimeString}`);
+  debugLog('Sent uptime response:', uptimeString);
 }
