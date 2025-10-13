@@ -11,11 +11,6 @@ module.exports = {
     // === RESTART & STABILITY ===
     autorestart: true,           // restart on crash or exit
     watch: false,                // disable watch to prevent loops
-    min_uptime: '10s',           // must survive 10s to be considered stable
-    max_restarts: 20,            // prevent infinite restart loops
-    restart_delay: 5000,         // wait 5s between restarts
-    exp_backoff_restart_delay: 10000, // exponential backoff for repeated crashes
-    max_memory_restart: '700M',  // restart if memory exceeds this limit
 
     // === ENVIRONMENT ===
     env: {
@@ -31,9 +26,5 @@ module.exports = {
     log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
     merge_logs: true,
     combine_logs: true,
-
-    // === STARTUP RELIABILITY ===
-    // If the bot exits with code 0, PM2 will still keep it alive
-    stop_exit_codes: [0],
   }]
 };
