@@ -1,6 +1,6 @@
 {
   "name": "wa-bot",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "TODO",
   "main": "dist/index.js",
   "type": "commonjs",

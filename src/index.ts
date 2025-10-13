@@ -5,7 +5,11 @@ import { saveReadyTimestamp } from './commands/uptime';
 import { debugLog, rotateDebugLogs } from './utils/debug';
 
 // Rotate logs on startup if they're too large
-rotateDebugLogs(10); // Rotate if debug.log is larger than 10MB
+rotateDebugLogs(10);
+
+// Track client state
+let isClientReady = false;
+let keepAliveInterval: NodeJS.Timeout | null = null;
 
 const client = new Client({
   authStrategy: new LocalAuth({
@@ -16,13 +20,15 @@ const client = new Client({
   },
   puppeteer: {
     headless: true,
-    // executablePath: '/usr/bin/chromium-browser',
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
       '--disable-gpu',
       '--no-zygote',
+      '--disable-background-timer-throttling',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-renderer-backgrounding'
     ],
   },
 });
@@ -42,10 +48,12 @@ client.on('authenticated', (session: any) => {
 
 client.on('auth_failure', (message: string) => {
   debugLog('Authentication failed:', message);
+  isClientReady = false;
 });
 
 client.on('ready', async () => {
   debugLog('Bot is ready and connected to WhatsApp!');
+  isClientReady = true;
 
   // Save ready timestamp for uptime tracking
   saveReadyTimestamp();
@@ -56,9 +64,7 @@ client.on('ready', async () => {
 
   // Set status message
   const currentTime = new Date().toLocaleString();
-  const statusMessage =
-    '🤖 Bot is online! Type /help for commands. | Last active: ' +
-    currentTime;
+  const statusMessage = '🤖 Bot is online! Type /help for commands. | Last active: ' + currentTime;
   debugLog('Setting status message to:', statusMessage);
   await client.setStatus(statusMessage);
   debugLog('Status message updated successfully');
@@ -66,22 +72,41 @@ client.on('ready', async () => {
   // Get client info
   const clientInfo = client.info;
   if (clientInfo) {
-    debugLog(
-      `Connected as: ${clientInfo.pushname} (${clientInfo.wid.user})`,
-    );
+    debugLog(`Connected as: ${clientInfo.pushname} (${clientInfo.wid.user})`);
   }
 
-  // On every X minutes, send a message to self to keep the session alive
-  const minutesTimeout = 5;
+  // Clear any existing keep-alive interval
+  if (keepAliveInterval) {
+    clearInterval(keepAliveInterval);
+  }
+
+  // Keep-alive function with proper error handling
   const imAlive = async (msg = '🤖 Bot is still alive!') => {
+    // Check if client is ready before attempting to send
+    if (!isClientReady) {
+      debugLog('Client not ready, skipping keep-alive message');
+      return;
+    }
+
+    const state = await client.getState();
+    if (state !== 'CONNECTED') {
+      debugLog(`Client state is ${state}, skipping keep-alive message`);
+      return;
+    }
+
     await client.sendMessage("120363403106512185@g.us", msg);
-    debugLog('Sent keep-alive message to self');
+    debugLog('Sent keep-alive message');
   };
 
-  await imAlive('🤖 Bot initiated!'); // Initial call
-  setInterval(async () => {
+  // Send initial keep-alive message
+  await imAlive('🤖 Bot initiated!');
+
+  // Set up keep-alive interval
+  const minutesTimeout = 30;
+  keepAliveInterval = setInterval(async () => {
     await imAlive();
   }, minutesTimeout * 60 * 1000);
+  
   debugLog(`Keep-alive messages set every ${minutesTimeout} minutes`);
 });
 
@@ -97,6 +122,55 @@ client.on('message', async (message: Message) => {
 
 client.on('disconnected', (reason: string) => {
   debugLog('Client disconnected:', reason);
+  isClientReady = false;
+  
+  // Clear keep-alive interval when disconnected
+  if (keepAliveInterval) {
+    clearInterval(keepAliveInterval);
+    keepAliveInterval = null;
+  }
+
+  // If logged out, exit the process
+  if (reason === 'LOGOUT') {
+    debugLog('Bot was logged out. Exiting process.');
+    process.exit(1);
+  }
+});
+
+// Handle process termination gracefully
+process.on('SIGINT', async () => {
+  debugLog('Received SIGINT. Shutting down gracefully...');
+  isClientReady = false;
+  
+  if (keepAliveInterval) {
+    clearInterval(keepAliveInterval);
+  }
+  
+  await client.destroy();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  debugLog('Received SIGTERM. Shutting down gracefully...');
+  isClientReady = false;
+  
+  if (keepAliveInterval) {
+    clearInterval(keepAliveInterval);
+  }
+  
+  await client.destroy();
+  process.exit(0);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  debugLog('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  debugLog('Uncaught Exception:', error);
+  isClientReady = false;
+  process.exit(1);
 });
 
 debugLog('Initializing WhatsApp bot...');
