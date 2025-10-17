@@ -9,7 +9,7 @@
     "watch": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
     "build": "tsc",
     "prettier": "prettier --write \"src/**/*.ts\"",
-    "pm2": "npm run reset && npm run build && pm2 delete wa-bot && pm2 start ecosystem.config.js && pm2 save",
+    "pm2": "npm run reset && npm run build && pm2 delete wa-bot || true && pm2 start ecosystem.config.js && pm2 save",
     "clear-logs": "rm -rf logs/*.log*",
     "reset": "rm -rf .wwebjs_auth .wwebjs_cache data/*.json logs core dist"
   },
