@@ -3,6 +3,7 @@ import qrcode from 'qrcode-terminal';
 import { handleCommand } from './commands/_index';
 import { saveReadyTimestamp } from './commands/uptime';
 import { debugLog, rotateDebugLogs } from './utils/debug';
+import { config } from './utils/config';
 
 // Rotate logs on startup if they're too large
 rotateDebugLogs(10);
@@ -58,17 +59,6 @@ client.on('ready', async () => {
   // Save ready timestamp for uptime tracking
   saveReadyTimestamp();
 
-  // Set presence to online
-  await client.sendPresenceAvailable();
-  debugLog('Presence set to online');
-
-  // Set status message
-  const currentTime = new Date().toLocaleString();
-  const statusMessage = '🤖 Bot is online! Type /help for commands. | Last active: ' + currentTime;
-  debugLog('Setting status message to:', statusMessage);
-  await client.setStatus(statusMessage);
-  debugLog('Status message updated successfully');
-
   // Get client info
   const clientInfo = client.info;
   if (clientInfo) {
@@ -80,34 +70,42 @@ client.on('ready', async () => {
     clearInterval(keepAliveInterval);
   }
 
-  // Keep-alive function with proper error handling
-  const imAlive = async (msg = '🤖 Bot is still alive!') => {
-    // Check if client is ready before attempting to send
-    if (!isClientReady) {
-      debugLog('Client not ready, skipping keep-alive message');
-      return;
-    }
+  // Only set up keep-alive if enabled in configuration
+  if (config.keepAlive.enabled) {
+    debugLog('Keep-alive is enabled, setting up interval...');
 
-    const state = await client.getState();
-    if (state !== 'CONNECTED') {
-      debugLog(`Client state is ${state}, skipping keep-alive message`);
-      return;
-    }
+    // Keep-alive function with proper error handling
+    const imAlive = async (msg = '🤖 Bot is still alive!') => {
+      // Check if client is ready before attempting to send
+      if (!isClientReady) {
+        debugLog('Client not ready, skipping keep-alive message');
+        return;
+      }
 
-    await client.sendMessage("120363403106512185@g.us", msg);
-    debugLog('Sent keep-alive message');
-  };
+      const state = await client.getState();
+      if (state !== 'CONNECTED') {
+        debugLog(`Client state is ${state}, skipping keep-alive message`);
+        return;
+      }
 
-  // Send initial keep-alive message
-  await imAlive('🤖 Bot initiated!');
+      await client.sendMessage(config.keepAlive.chatId, msg);
+      debugLog('Sent keep-alive message to:', config.keepAlive.chatId);
+    };
 
-  // Set up keep-alive interval
-  const minutesTimeout = 30;
-  keepAliveInterval = setInterval(async () => {
-    await imAlive();
-  }, minutesTimeout * 60 * 1000);
-  
-  debugLog(`Keep-alive messages set every ${minutesTimeout} minutes`);
+    // Send initial keep-alive message
+    await imAlive('🤖 Bot initiated!');
+
+    // Set up keep-alive interval
+    keepAliveInterval = setInterval(async () => {
+      await imAlive();
+    }, config.keepAlive.intervalMinutes * 60 * 1000);
+    
+    debugLog(`Keep-alive messages set every ${config.keepAlive.intervalMinutes} minutes`);
+  } else {
+    debugLog('Keep-alive is disabled in configuration');
+  }
+
+  debugLog('Bot is online and ready to receive messages!');
 });
 
 client.on('message', async (message: Message) => {
