@@ -7,6 +7,7 @@ import { handleInfoCommand } from './info';
 import { handleSourceCommand } from './source';
 import { handleUptimeCommand } from './uptime';
 import { handleVersionCommand } from './version';
+import { handleQrCommand } from './qr';
 import {
   handleExpensesCommand,
   activeExpensesTracking,
@@ -16,6 +17,14 @@ import {
 } from './expenses';
 
 export async function handleCommand(message: Message) {
+  // Handle commands that start with specific prefixes
+  if (message.body.startsWith('/qr ')) {
+    debugLog('QR command invoked');
+    await handleQrCommand(message);
+    return;
+  }
+
+  // Handle exact match commands
   switch (message.body) {
     case '/help':
       debugLog('Help command invoked');
@@ -52,6 +61,10 @@ export async function handleCommand(message: Message) {
     case '/expenses-reset':
       debugLog('Expenses reset command invoked');
       await handleExpensesResetCommand(message);
+      break;
+    case '/qr':
+      debugLog('QR command invoked without text');
+      await handleQrCommand(message);
       break;
     default:
       if (activeExpensesTracking.has(message.from)) {
