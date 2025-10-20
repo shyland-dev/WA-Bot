@@ -8,6 +8,7 @@ import { handleSourceCommand } from './source';
 import { handleUptimeCommand } from './uptime';
 import { handleVersionCommand } from './version';
 import { handleQrCommand } from './qr';
+import { handleApiTestCommand } from './apiTest';
 import {
   handleExpensesCommand,
   activeExpensesTracking,
@@ -49,6 +50,10 @@ export async function handleCommand(message: Message) {
     case '/version':
       debugLog('Version command invoked');
       await handleVersionCommand(message);
+      break;
+    case '/api-test':
+      debugLog('API test command invoked');
+      await handleApiTestCommand(message);
       break;
     case '/expenses':
       debugLog('Expenses command invoked');

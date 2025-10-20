@@ -10,6 +10,11 @@ export interface AppConfig {
     chatId: string;
     intervalMinutes: number;
   };
+  webservice: {
+    url: string;
+    user: string;
+    password: string;
+  };
 }
 
 function parseBoolean(value: string | undefined, defaultValue: boolean): boolean {
@@ -29,13 +34,22 @@ export const config: AppConfig = {
     chatId: process.env.KEEP_ALIVE_CHAT_ID || '120363403106512185@g.us',
     intervalMinutes: parseNumber(process.env.KEEP_ALIVE_INTERVAL_MINUTES, 30),
   },
+  webservice: {
+    url: process.env.WEBSERVICE_URL || 'https://api.example.com',
+    user: process.env.WEBSERVICE_USER || 'user',
+    password: process.env.WEBSERVICE_PASSWORD || 'password',
+  },
 };
 
-// Log configuration on startup
 debugLog('Configuration loaded:', {
   keepAlive: {
     enabled: config.keepAlive.enabled,
     chatId: config.keepAlive.chatId,
     intervalMinutes: config.keepAlive.intervalMinutes,
+  },
+  webservice: {
+    url: config.webservice.url,
+    user: config.webservice.user,
+    password: config.webservice.password
   },
 });
