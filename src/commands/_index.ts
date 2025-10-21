@@ -8,7 +8,11 @@ import { handleSourceCommand } from './source';
 import { handleUptimeCommand } from './uptime';
 import { handleVersionCommand } from './version';
 import { handleQrCommand } from './qr';
-import { handleApiTestCommand } from './apiTest';
+import { handleApiReadAllCommand } from './apiReadAll';
+import { handleApiReadCommand } from './apiRead';
+import { handleApiCreateCommand } from './apiCreate';
+import { handleApiUpdateCommand } from './apiUpdate';
+import { handleApiDeleteCommand } from './apiDelete';
 import {
   handleExpensesCommand,
   activeExpensesTracking,
@@ -17,11 +21,112 @@ import {
   handleExpensesResetCommand,
 } from './expenses';
 
+// Helper function to handle API errors
+async function handleApiError(message: Message, error: any, operation: string) {
+  debugLog(`Error in ${operation}:`, error);
+  
+  let errorMessage = '❌ An error occurred while processing your request.\n\n';
+  
+  if (error.response) {
+    // API responded with an error status
+    const status = error.response.status;
+    const data = error.response.data;
+    
+    switch (status) {
+      case 400:
+        errorMessage += '🔍 *Bad Request:* Invalid data provided';
+        if (data && data.message) {
+          errorMessage += `\n📝 Details: ${data.message}`;
+        }
+        break;
+      case 401:
+        errorMessage += '🔐 *Authentication Failed:* Invalid credentials';
+        break;
+      case 403:
+        errorMessage += '⛔ *Access Denied:* Insufficient permissions';
+        break;
+      case 404:
+        errorMessage += '🔍 *Not Found:* Record does not exist';
+        break;
+      case 422:
+        errorMessage += '📝 *Validation Error:* Invalid data format';
+        if (data && data.message) {
+          errorMessage += `\n📝 Details: ${data.message}`;
+        }
+        break;
+      case 500:
+        errorMessage += '🔧 *Server Error:* Internal server error';
+        break;
+      default:
+        errorMessage += `🔧 *HTTP Error ${status}:* ${error.response.statusText}`;
+        if (data && data.message) {
+          errorMessage += `\n📝 Details: ${data.message}`;
+        }
+    }
+  } else if (error.request) {
+    // Request was made but no response received
+    errorMessage += '🌐 *Network Error:* Unable to connect to API server';
+  } else if (error.code === 'ECONNABORTED') {
+    // Timeout error
+    errorMessage += '⏱️ *Timeout Error:* Request took too long to complete';
+  } else {
+    // Something else happened
+    errorMessage += `⚠️ *Error:* ${error.message || 'Unknown error occurred'}`;
+  }
+  
+  await message.reply(errorMessage);
+}
+
 export async function handleCommand(message: Message) {
   // Handle commands that start with specific prefixes
   if (message.body.startsWith('/qr ')) {
     debugLog('QR command invoked');
-    await handleQrCommand(message);
+    try {
+      await handleQrCommand(message);
+    } catch (error) {
+      debugLog('Error in QR command:', error);
+      await message.reply('❌ An error occurred while generating the QR code. Please try again.');
+    }
+    return;
+  }
+
+  if (message.body.startsWith('/api-read ')) {
+    debugLog('API read command invoked');
+    try {
+      await handleApiReadCommand(message);
+    } catch (error) {
+      await handleApiError(message, error, 'API read');
+    }
+    return;
+  }
+
+  if (message.body.startsWith('/api-create ')) {
+    debugLog('API create command invoked');
+    try {
+      await handleApiCreateCommand(message);
+    } catch (error) {
+      await handleApiError(message, error, 'API create');
+    }
+    return;
+  }
+
+  if (message.body.startsWith('/api-update ')) {
+    debugLog('API update command invoked');
+    try {
+      await handleApiUpdateCommand(message);
+    } catch (error) {
+      await handleApiError(message, error, 'API update');
+    }
+    return;
+  }
+
+  if (message.body.startsWith('/api-delete ')) {
+    debugLog('API delete command invoked');
+    try {
+      await handleApiDeleteCommand(message);
+    } catch (error) {
+      await handleApiError(message, error, 'API delete');
+    }
     return;
   }
 
@@ -51,9 +156,13 @@ export async function handleCommand(message: Message) {
       debugLog('Version command invoked');
       await handleVersionCommand(message);
       break;
-    case '/api-test':
-      debugLog('API test command invoked');
-      await handleApiTestCommand(message);
+    case '/api-read-all':
+      debugLog('API read all command invoked');
+      try {
+        await handleApiReadAllCommand(message);
+      } catch (error) {
+        await handleApiError(message, error, 'API read all');
+      }
       break;
     case '/expenses':
       debugLog('Expenses command invoked');
@@ -69,7 +178,12 @@ export async function handleCommand(message: Message) {
       break;
     case '/qr':
       debugLog('QR command invoked without text');
-      await handleQrCommand(message);
+      try {
+        await handleQrCommand(message);
+      } catch (error) {
+        debugLog('Error in QR command:', error);
+        await message.reply('❌ An error occurred while generating the QR code. Please try again.');
+      }
       break;
     default:
       if (activeExpensesTracking.has(message.from)) {

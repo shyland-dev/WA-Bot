@@ -21,6 +21,21 @@ interface TestResponse {
   data: TestRecord[];
 }
 
+interface SingleTestResponse {
+  message: string;
+  data: TestRecord;
+}
+
+interface CreateUpdateRequest {
+  phrase: string;
+  number: number;
+  date: string;
+}
+
+interface ApiResponse {
+  message: string;
+}
+
 class ApiService {
   private axiosInstance: ReturnType<typeof axios.create>;
   private token: string | null = null;
@@ -73,10 +88,10 @@ class ApiService {
     return this.token!;
   }
 
-  async getTestData(): Promise<TestResponse> {
+  async getAllTestData(): Promise<TestResponse> {
     const token = await this.getValidToken();
     
-    debugLog('Fetching test data from webservice...');
+    debugLog('Fetching all test data from webservice...');
 
     const response = await this.axiosInstance.get<TestResponse>('/api/test', {
       headers: {
@@ -84,7 +99,71 @@ class ApiService {
       },
     });
 
-    debugLog('Test data retrieved successfully, count:', response.data.count);
+    debugLog('All test data retrieved successfully, count:', response.data.count);
+    
+    return response.data;
+  }
+
+  async getTestDataById(id: string): Promise<SingleTestResponse> {
+    const token = await this.getValidToken();
+    
+    debugLog('Fetching test data by ID:', id);
+
+    const response = await this.axiosInstance.get<SingleTestResponse>(`/api/test/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    debugLog('Test data retrieved successfully for ID:', id);
+    
+    return response.data;
+  }
+
+  async createTestData(data: CreateUpdateRequest): Promise<ApiResponse> {
+    const token = await this.getValidToken();
+    
+    debugLog('Creating new test data:', data);
+
+    const response = await this.axiosInstance.post<ApiResponse>('/api/test', data, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    debugLog('Test data created successfully');
+    
+    return response.data;
+  }
+
+  async updateTestData(id: string, data: CreateUpdateRequest): Promise<ApiResponse> {
+    const token = await this.getValidToken();
+    
+    debugLog('Updating test data for ID:', id, 'with data:', data);
+
+    const response = await this.axiosInstance.put<ApiResponse>(`/api/test/${id}`, data, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    debugLog('Test data updated successfully for ID:', id);
+    
+    return response.data;
+  }
+
+  async deleteTestData(id: string): Promise<ApiResponse> {
+    const token = await this.getValidToken();
+    
+    debugLog('Deleting test data for ID:', id);
+
+    const response = await this.axiosInstance.delete<ApiResponse>(`/api/test/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    debugLog('Test data deleted successfully for ID:', id);
     
     return response.data;
   }

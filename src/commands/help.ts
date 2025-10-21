@@ -7,7 +7,15 @@ const HELP_MESSAGE = `Here are the available commands:
 \`/uptime\` - Get the bot's uptime since last ready state
 \`/version\` - Get the bot's current version
 \`/qr <text>\` - Generate a QR code image from text
-\`/api-test\` - Test connection to the webservice API
+
+*API Commands:*
+\`/api-read-all\` - Get all records from the API
+\`/api-read <ID>\` - Get a specific record by ID
+\`/api-create <phrase> | <number> | <date>\` - Create a new record
+\`/api-update <ID> | <phrase> | <number> | <date>\` - Update a record
+\`/api-delete <ID>\` - Delete a record by ID
+
+*Expense Commands:*
 \`/expenses\` - Start or stop tracking expenses in this chat/group
 \`/expenses-total\` - Get the total expenses tracked in this chat/group
 \`/expenses-reset\` - Reset all tracked expenses in this chat/group
