@@ -14,6 +14,13 @@ import { handleApiCreateCommand } from './apiCreate';
 import { handleApiUpdateCommand } from './apiUpdate';
 import { handleApiDeleteCommand } from './apiDelete';
 import {
+  handleEventCreateCommand,
+  handleEventCommand,
+  handleEventConfirmCommand,
+  handleEventDismissCommand,
+  handleEventDeleteCommand,
+} from './events';
+import {
   handleExpensesCommand,
   activeExpensesTracking,
   handleExpensesMessage,
@@ -24,14 +31,14 @@ import {
 // Helper function to handle API errors
 async function handleApiError(message: Message, error: any, operation: string) {
   debugLog(`Error in ${operation}:`, error);
-  
+
   let errorMessage = '❌ An error occurred while processing your request.\n\n';
-  
+
   if (error.response) {
     // API responded with an error status
     const status = error.response.status;
     const data = error.response.data;
-    
+
     switch (status) {
       case 400:
         errorMessage += '🔍 *Bad Request:* Invalid data provided';
@@ -73,7 +80,7 @@ async function handleApiError(message: Message, error: any, operation: string) {
     // Something else happened
     errorMessage += `⚠️ *Error:* ${error.message || 'Unknown error occurred'}`;
   }
-  
+
   await message.reply(errorMessage);
 }
 
@@ -86,6 +93,17 @@ export async function handleCommand(message: Message) {
     } catch (error) {
       debugLog('Error in QR command:', error);
       await message.reply('❌ An error occurred while generating the QR code. Please try again.');
+    }
+    return;
+  }
+
+  if (message.body.startsWith('/event-create ')) {
+    debugLog('Event create command invoked');
+    try {
+      await handleEventCreateCommand(message);
+    } catch (error) {
+      debugLog('Error in event create command:', error);
+      await message.reply('❌ An error occurred while creating the event. Please try again.');
     }
     return;
   }
@@ -155,6 +173,22 @@ export async function handleCommand(message: Message) {
     case '/version':
       debugLog('Version command invoked');
       await handleVersionCommand(message);
+      break;
+    case '/event':
+      debugLog('Event command invoked');
+      await handleEventCommand(message);
+      break;
+    case '/event-confirm':
+      debugLog('Event confirm command invoked');
+      await handleEventConfirmCommand(message);
+      break;
+    case '/event-dismiss':
+      debugLog('Event dismiss command invoked');
+      await handleEventDismissCommand(message);
+      break;
+    case '/event-delete':
+      debugLog('Event delete command invoked');
+      await handleEventDeleteCommand(message);
       break;
     case '/api-read-all':
       debugLog('API read all command invoked');

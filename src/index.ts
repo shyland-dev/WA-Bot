@@ -2,6 +2,7 @@ import { Client, LocalAuth, Message } from 'whatsapp-web.js';
 import qrcode from 'qrcode-terminal';
 import { handleCommand } from './commands/_index';
 import { saveReadyTimestamp } from './commands/uptime';
+import { checkEventReminders } from './commands/events';
 import { debugLog, rotateDebugLogs } from './utils/debug';
 import { config } from './utils/config';
 
@@ -11,6 +12,7 @@ rotateDebugLogs(10);
 // Track client state
 let isClientReady = false;
 let keepAliveInterval: NodeJS.Timeout | null = null;
+let eventReminderInterval: NodeJS.Timeout | null = null;
 
 const client = new Client({
   authStrategy: new LocalAuth({
@@ -65,10 +67,21 @@ client.on('ready', async () => {
     debugLog(`Connected as: ${clientInfo.pushname} (${clientInfo.wid.user})`);
   }
 
-  // Clear any existing keep-alive interval
+  // Clear any existing intervals
   if (keepAliveInterval) {
     clearInterval(keepAliveInterval);
   }
+  if (eventReminderInterval) {
+    clearInterval(eventReminderInterval);
+  }
+
+  // Set up event reminder checking (every minute)
+  eventReminderInterval = setInterval(() => {
+    if (isClientReady) {
+      checkEventReminders(client);
+    }
+  }, 60 * 1000); // Check every minute
+  debugLog('Event reminder checker started');
 
   // Only set up keep-alive if enabled in configuration
   if (config.keepAlive.enabled) {
@@ -122,10 +135,14 @@ client.on('disconnected', (reason: string) => {
   debugLog('Client disconnected:', reason);
   isClientReady = false;
   
-  // Clear keep-alive interval when disconnected
+  // Clear intervals when disconnected
   if (keepAliveInterval) {
     clearInterval(keepAliveInterval);
     keepAliveInterval = null;
+  }
+  if (eventReminderInterval) {
+    clearInterval(eventReminderInterval);
+    eventReminderInterval = null;
   }
 
   // If logged out, exit the process
@@ -143,6 +160,9 @@ process.on('SIGINT', async () => {
   if (keepAliveInterval) {
     clearInterval(keepAliveInterval);
   }
+  if (eventReminderInterval) {
+    clearInterval(eventReminderInterval);
+  }
   
   await client.destroy();
   process.exit(0);
@@ -154,6 +174,9 @@ process.on('SIGTERM', async () => {
   
   if (keepAliveInterval) {
     clearInterval(keepAliveInterval);
+  }
+  if (eventReminderInterval) {
+    clearInterval(eventReminderInterval);
   }
   
   await client.destroy();

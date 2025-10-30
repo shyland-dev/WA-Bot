@@ -8,6 +8,13 @@ const HELP_MESSAGE = `Here are the available commands:
 \`/version\` - Get the bot's current version
 \`/qr <text>\` - Generate a QR code image from text
 
+*Event Commands:*
+\`/event-create TITLE | DATETIME | LOCATION | DESCRIPTION\` - Create a new event (admins only)
+\`/event\` - View current event details and attendance
+\`/event-confirm\` - Confirm your attendance
+\`/event-dismiss\` - Decline attendance
+\`/event-delete\` - Delete the current active event (admins only)
+
 *API Commands:*
 \`/api-read-all\` - Get all records from the API
 \`/api-read <ID>\` - Get a specific record by ID
