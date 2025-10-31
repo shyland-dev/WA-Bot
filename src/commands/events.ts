@@ -461,59 +461,45 @@ export function checkEventReminders(client: any) {
       
       debugLog(`Event "${event.title}" time difference: ${timeDiffMinutes} minutes`);
       
-      // Check for specific reminder intervals with tolerance ranges
+      // Check for specific reminder intervals with exact minute checks
       const reminders = [
         { 
           key: '1week', 
-          targetMinutes: 7 * 24 * 60, // 10080 minutes
-          tolerance: 30, // ±30 minutes
+          targetMinutes: 7 * 24 * 60, // 10080 minutes (exactly 1 week)
           text: '1 week' 
         },
         { 
           key: '3days', 
-          targetMinutes: 3 * 24 * 60, // 4320 minutes
-          tolerance: 30, // ±30 minutes
+          targetMinutes: 3 * 24 * 60, // 4320 minutes (exactly 3 days)
           text: '3 days' 
         },
         { 
           key: '1day', 
-          targetMinutes: 24 * 60, // 1440 minutes
-          tolerance: 30, // ±30 minutes
+          targetMinutes: 24 * 60, // 1440 minutes (exactly 1 day)
           text: '1 day' 
         },
         { 
           key: '3hours', 
-          targetMinutes: 3 * 60, // 180 minutes
-          tolerance: 15, // ±15 minutes
+          targetMinutes: 3 * 60, // 180 minutes (exactly 3 hours)
           text: '3 hours' 
         },
         { 
           key: '1hour', 
-          targetMinutes: 60, // 60 minutes
-          tolerance: 5, // ±5 minutes
+          targetMinutes: 60, // 60 minutes (exactly 1 hour)
           text: '1 hour' 
         },
         { 
           key: '30min', 
-          targetMinutes: 30, // 30 minutes
-          tolerance: 2, // ±2 minutes
+          targetMinutes: 30, // 30 minutes (exactly 30 minutes)
           text: '30 minutes' 
-        },
-        { 
-          key: 'start', 
-          targetMinutes: 0, // Event start time
-          tolerance: 1, // ±1 minute
-          text: 'starting soon' 
         }
       ];
       
       reminders.forEach(async (reminder) => {
         const reminderKey = reminder.key as keyof typeof event.reminders;
         
-        // Check if reminder hasn't been sent and time is within tolerance of target
-        const isWithinRange = Math.abs(timeDiffMinutes - reminder.targetMinutes) <= reminder.tolerance;
-        
-        if (!event.reminders[reminderKey] && isWithinRange) {
+        // Check if reminder hasn't been sent and time matches exactly
+        if (!event.reminders[reminderKey] && timeDiffMinutes === reminder.targetMinutes) {
           event.reminders[reminderKey] = true;
           
           const reminderMessage = 
@@ -521,7 +507,7 @@ export function checkEventReminders(client: any) {
             `📌 *${event.title}*\n` +
             `📍 *Location:* ${event.location}\n` +
             `🕐 *Date & Time:* ${formatDateTime(event.datetime)}\n\n` +
-            `${reminder.key === 'start' ? '🎉 *The event is starting now!*' : `⏳ *Time remaining:* ${reminder.text}`}`;
+            `⏳ *Time remaining:* ${reminder.text}`;
           
           try {
             await client.sendMessage(chatId, reminderMessage);
@@ -534,9 +520,43 @@ export function checkEventReminders(client: any) {
         }
       });
       
-      // Deactivate event immediately when it starts (timeDiff <= 0 means event has started)
-      if (timeDiffMinutes <= 0) {
-        // Move to past events immediately when event starts
+      // Send "event starting now" message with confirmed attendees list when timeDiffMinutes is exactly 0
+      if (timeDiffMinutes === -1 && !event.reminders.start) {
+        event.reminders.start = true;
+        
+        // Get confirmed attendees
+        const confirmedAttendees = event.attendees.filter(a => a.status === 'confirmed');
+        
+        let startingMessage = 
+          `🎉 *Event Starting Now!*\n\n` +
+          `📌 *${event.title}*\n` +
+          `📍 *Location:* ${event.location}\n` +
+          `🕐 *Date & Time:* ${formatDateTime(event.datetime)}\n\n` +
+          `🚀 The event is starting now! Have fun everyone!\n\n`;
+        
+        // Add confirmed attendees list
+        if (confirmedAttendees.length > 0) {
+          startingMessage += `✅ *Confirmed Attendees (${confirmedAttendees.length}):*\n`;
+          confirmedAttendees.forEach((attendee, index) => {
+            startingMessage += `${index + 1}. ${attendee.name}\n`;
+          });
+        } else {
+          startingMessage += `📝 *No confirmed attendees yet*`;
+        }
+        
+        try {
+          await client.sendMessage(chatId, startingMessage);
+          debugLog('Sent "event starting now" message with attendees for event:', event.title);
+        } catch (error) {
+          debugLog('Error sending starting message:', error);
+        }
+        
+        saveEventsData();
+      }
+      
+      // Deactivate event 1 minute after it starts
+      if (timeDiffMinutes === -2) {
+        // Move to past events 1 minute after event starts
         chatEvents.pastEvents.push(event);
         chatEvents.activeEvent = null;
         saveEventsData();
@@ -545,7 +565,7 @@ export function checkEventReminders(client: any) {
         // Send final notification that event is now inactive
         try {
           const inactiveMessage = 
-            `🎊 *Event Started!*\n\n` +
+            `🎊 *Event Completed!*\n\n` +
             `📌 *${event.title}* has started and is now inactive.\n\n` +
             `✨ You can now create a new event if needed.`;
           

@@ -75,13 +75,13 @@ client.on('ready', async () => {
     clearInterval(eventReminderInterval);
   }
 
-  // Set up event reminder checking (every minute)
+    // Set up event reminder checking (every 30 seconds)
   eventReminderInterval = setInterval(() => {
     if (isClientReady) {
       checkEventReminders(client);
     }
-  }, 60 * 1000); // Check every minute
-  debugLog('Event reminder checker started');
+  }, 30 * 1000); // Check every 30 seconds
+  debugLog('Event reminder checker started (30 second intervals)');
 
   // Only set up keep-alive if enabled in configuration
   if (config.keepAlive.enabled) {
