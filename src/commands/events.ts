@@ -356,6 +356,14 @@ export async function handleEventConfirmCommand(message: Message) {
     }
     
     const event = chatEvents.activeEvent;
+    
+    // Check if event has already started
+    const now = new Date();
+    if (event.datetime <= now) {
+      await message.reply('❌ Cannot confirm attendance. The event has already started.');
+      return;
+    }
+    
     const contact = await message.getContact();
     const phoneNumber = contact.number;
     const name = contact.pushname || contact.name || phoneNumber;
@@ -407,6 +415,14 @@ export async function handleEventDismissCommand(message: Message) {
     }
     
     const event = chatEvents.activeEvent;
+    
+    // Check if event has already started
+    const now = new Date();
+    if (event.datetime <= now) {
+      await message.reply('❌ Cannot change attendance. The event has already started.');
+      return;
+    }
+    
     const contact = await message.getContact();
     const phoneNumber = contact.number;
     const name = contact.pushname || contact.name || phoneNumber;
@@ -457,9 +473,10 @@ export function checkEventReminders(client: any) {
       
       const event = chatEvents.activeEvent;
       const timeDiff = event.datetime.getTime() - now.getTime();
-      const timeDiffMinutes = Math.floor(timeDiff / (1000 * 60)); // Convert to minutes
+      const timeDiffSeconds = Math.floor(timeDiff / 1000); // Convert to seconds
+      const timeDiffMinutes = Math.floor(timeDiffSeconds / 60); // Convert to minutes
       
-      debugLog(`Event "${event.title}" time difference: ${timeDiffMinutes} minutes`);
+      debugLog(`Event "${event.title}" time difference: ${timeDiffSeconds} seconds (${timeDiffMinutes} minutes)`);
       
       // Check for specific reminder intervals with exact minute checks
       const reminders = [
@@ -511,7 +528,7 @@ export function checkEventReminders(client: any) {
           
           try {
             await client.sendMessage(chatId, reminderMessage);
-            debugLog('Sent reminder for event:', event.title, 'Reminder:', reminder.text, 'Minutes remaining:', timeDiffMinutes);
+            debugLog('Sent reminder for event:', event.title, 'Reminder:', reminder.text, 'Seconds remaining:', timeDiffSeconds);
           } catch (error) {
             debugLog('Error sending reminder:', error);
           }
@@ -520,8 +537,8 @@ export function checkEventReminders(client: any) {
         }
       });
       
-      // Send "event starting now" message with confirmed attendees list when timeDiffMinutes is exactly 0
-      if (timeDiffMinutes === -1 && !event.reminders.start) {
+      // Send "event starting now" message with confirmed attendees list when timeDiffMinutes is less than 0
+      if (timeDiffMinutes < 0 && !event.reminders.start) {
         event.reminders.start = true;
         
         // Get confirmed attendees
@@ -546,7 +563,7 @@ export function checkEventReminders(client: any) {
         
         try {
           await client.sendMessage(chatId, startingMessage);
-          debugLog('Sent "event starting now" message with attendees for event:', event.title);
+          debugLog('Sent "event starting now" message with attendees for event:', event.title, 'Seconds past start:', Math.abs(timeDiffSeconds));
         } catch (error) {
           debugLog('Error sending starting message:', error);
         }
@@ -554,13 +571,13 @@ export function checkEventReminders(client: any) {
         saveEventsData();
       }
       
-      // Deactivate event 1 minute after it starts
-      if (timeDiffMinutes === -2) {
-        // Move to past events 1 minute after event starts
+      // Deactivate event when timeDiffMinutes is less than -1
+      if (timeDiffMinutes < -1) {
+        // Move to past events 2 minutes after event starts
         chatEvents.pastEvents.push(event);
         chatEvents.activeEvent = null;
         saveEventsData();
-        debugLog('Event has started and was deactivated:', event.title);
+        debugLog('Event has started and was deactivated:', event.title, 'Seconds past start:', Math.abs(timeDiffSeconds));
         
         // Send final notification that event is now inactive
         try {
