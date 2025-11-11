@@ -34,7 +34,7 @@ function loadActiveTracking() {
   if (fs.existsSync(ACTIVE_TRACKING_FILE)) {
     const data = fs.readFileSync(ACTIVE_TRACKING_FILE, 'utf8');
     const activeChats: string[] = JSON.parse(data);
-    activeChats.forEach(chatId => activeExpensesTracking.add(chatId));
+    activeChats.forEach((chatId) => activeExpensesTracking.add(chatId));
     debugLog('Loaded active tracking for', activeChats.length, 'chats');
   }
 }
@@ -52,17 +52,21 @@ function loadExpensesData() {
   if (fs.existsSync(EXPENSES_DATA_FILE)) {
     const data = fs.readFileSync(EXPENSES_DATA_FILE, 'utf8');
     const expensesObj: Record<string, ChatExpenses> = JSON.parse(data);
-    
+
     // Convert timestamp strings back to Date objects
     Object.entries(expensesObj).forEach(([chatId, expenses]) => {
-      expenses.items = expenses.items.map(item => ({
+      expenses.items = expenses.items.map((item) => ({
         ...item,
-        timestamp: new Date(item.timestamp)
+        timestamp: new Date(item.timestamp),
       }));
       expensesData.set(chatId, expenses);
     });
-    
-    debugLog('Loaded expenses data for', Object.keys(expensesObj).length, 'chats');
+
+    debugLog(
+      'Loaded expenses data for',
+      Object.keys(expensesObj).length,
+      'chats',
+    );
   }
 }
 

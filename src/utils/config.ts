@@ -17,7 +17,10 @@ export interface AppConfig {
   };
 }
 
-function parseBoolean(value: string | undefined, defaultValue: boolean): boolean {
+function parseBoolean(
+  value: string | undefined,
+  defaultValue: boolean,
+): boolean {
   if (!value) return defaultValue;
   return value.toLowerCase() === 'true';
 }
@@ -50,6 +53,6 @@ debugLog('Configuration loaded:', {
   webservice: {
     url: config.webservice.url,
     user: config.webservice.user,
-    password: config.webservice.password
+    password: config.webservice.password,
   },
 });

@@ -22,7 +22,7 @@ function ensureDataDir() {
 export function saveReadyTimestamp() {
   ensureDataDir();
   const uptimeData: UptimeData = {
-    readyTimestamp: new Date().toISOString()
+    readyTimestamp: new Date().toISOString(),
   };
   fs.writeFileSync(UPTIME_FILE, JSON.stringify(uptimeData, null, 2));
   debugLog('Saved ready timestamp:', uptimeData.readyTimestamp);
@@ -42,7 +42,7 @@ function loadReadyTimestamp(): Date | null {
 function formatUptime(startTime: Date): string {
   const now = new Date();
   const diffMs = now.getTime() - startTime.getTime();
-  
+
   // Convert milliseconds to various units
   const seconds = Math.floor(diffMs / 1000);
   const minutes = Math.floor(seconds / 60);
@@ -50,36 +50,43 @@ function formatUptime(startTime: Date): string {
   const days = Math.floor(hours / 24);
   const months = Math.floor(days / 30.44); // Average days per month
   const years = Math.floor(months / 12);
-  
+
   // Calculate remainders
   const remainingMonths = months % 12;
-  const remainingDays = Math.floor((days % 30.44));
+  const remainingDays = Math.floor(days % 30.44);
   const remainingHours = hours % 24;
   const remainingMinutes = minutes % 60;
   const remainingSeconds = seconds % 60;
-  
+
   // Build the uptime string
   const parts: string[] = [];
-  
+
   if (years > 0) parts.push(`${years}year${years > 1 ? 's' : ''}`);
-  if (remainingMonths > 0) parts.push(`${remainingMonths}month${remainingMonths > 1 ? 's' : ''}`);
-  if (remainingDays > 0) parts.push(`${remainingDays}day${remainingDays > 1 ? 's' : ''}`);
-  if (remainingHours > 0) parts.push(`${remainingHours}hour${remainingHours > 1 ? 's' : ''}`);
-  if (remainingMinutes > 0) parts.push(`${remainingMinutes}minute${remainingMinutes > 1 ? 's' : ''}`);
-  if (remainingSeconds > 0) parts.push(`${remainingSeconds}second${remainingSeconds > 1 ? 's' : ''}`);
-  
+  if (remainingMonths > 0)
+    parts.push(`${remainingMonths}month${remainingMonths > 1 ? 's' : ''}`);
+  if (remainingDays > 0)
+    parts.push(`${remainingDays}day${remainingDays > 1 ? 's' : ''}`);
+  if (remainingHours > 0)
+    parts.push(`${remainingHours}hour${remainingHours > 1 ? 's' : ''}`);
+  if (remainingMinutes > 0)
+    parts.push(`${remainingMinutes}minute${remainingMinutes > 1 ? 's' : ''}`);
+  if (remainingSeconds > 0)
+    parts.push(`${remainingSeconds}second${remainingSeconds > 1 ? 's' : ''}`);
+
   // Return formatted string or fallback
   return parts.length > 0 ? parts.join(' ') : '0seconds';
 }
 
 export async function handleUptimeCommand(message: Message) {
   const readyTimestamp = loadReadyTimestamp();
-  
+
   if (!readyTimestamp) {
-    await message.reply('No uptime data available. The bot may need to restart to track uptime.');
+    await message.reply(
+      'No uptime data available. The bot may need to restart to track uptime.',
+    );
     return;
   }
-  
+
   const uptimeString = formatUptime(readyTimestamp);
   await message.reply(`Bot uptime: ${uptimeString}`);
   debugLog('Sent uptime response:', uptimeString);

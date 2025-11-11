@@ -4,13 +4,13 @@ import { apiService } from '../utils/apiService';
 
 export async function handleApiReadAllCommand(message: Message) {
   await message.reply('🔄 Fetching all data from API...');
-  
+
   const response = await apiService.getAllTestData();
-  
+
   // Format the response for WhatsApp
   let responseText = `✅ ${response.message}\n\n`;
   responseText += `📊 Count: ${response.count}\n\n`;
-  
+
   if (response.data && response.data.length > 0) {
     responseText += '📋 *Data:*\n';
     response.data.forEach((record, index) => {
@@ -22,8 +22,8 @@ export async function handleApiReadAllCommand(message: Message) {
   } else {
     responseText += '📋 No data available\n';
   }
-  
+
   await message.reply(responseText);
-  
+
   debugLog('API read all command completed successfully');
 }

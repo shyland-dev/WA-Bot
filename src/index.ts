@@ -31,7 +31,7 @@ const client = new Client({
       '--no-zygote',
       '--disable-background-timer-throttling',
       '--disable-backgrounding-occluded-windows',
-      '--disable-renderer-backgrounding'
+      '--disable-renderer-backgrounding',
     ],
   },
 });
@@ -58,6 +58,14 @@ client.on('ready', async () => {
   debugLog('Bot is ready and connected to WhatsApp!');
   isClientReady = true;
 
+  const lastActivation = new Date().toLocaleString();
+
+  // Set the bot's status message
+  await client.setStatus('Last activation: ' + lastActivation);
+
+  // Set bot as ONLINE
+  await client.sendPresenceAvailable();
+
   // Save ready timestamp for uptime tracking
   saveReadyTimestamp();
 
@@ -75,7 +83,7 @@ client.on('ready', async () => {
     clearInterval(eventReminderInterval);
   }
 
-    // Set up event reminder checking (every 30 seconds)
+  // Set up event reminder checking (every 30 seconds)
   eventReminderInterval = setInterval(() => {
     if (isClientReady) {
       checkEventReminders(client);
@@ -109,11 +117,16 @@ client.on('ready', async () => {
     await imAlive('🤖 Bot initiated!');
 
     // Set up keep-alive interval
-    keepAliveInterval = setInterval(async () => {
-      await imAlive();
-    }, config.keepAlive.intervalMinutes * 60 * 1000);
-    
-    debugLog(`Keep-alive messages set every ${config.keepAlive.intervalMinutes} minutes`);
+    keepAliveInterval = setInterval(
+      async () => {
+        await imAlive();
+      },
+      config.keepAlive.intervalMinutes * 60 * 1000,
+    );
+
+    debugLog(
+      `Keep-alive messages set every ${config.keepAlive.intervalMinutes} minutes`,
+    );
   } else {
     debugLog('Keep-alive is disabled in configuration');
   }
@@ -134,7 +147,7 @@ client.on('message', async (message: Message) => {
 client.on('disconnected', (reason: string) => {
   debugLog('Client disconnected:', reason);
   isClientReady = false;
-  
+
   // Clear intervals when disconnected
   if (keepAliveInterval) {
     clearInterval(keepAliveInterval);
@@ -156,14 +169,14 @@ client.on('disconnected', (reason: string) => {
 process.on('SIGINT', async () => {
   debugLog('Received SIGINT. Shutting down gracefully...');
   isClientReady = false;
-  
+
   if (keepAliveInterval) {
     clearInterval(keepAliveInterval);
   }
   if (eventReminderInterval) {
     clearInterval(eventReminderInterval);
   }
-  
+
   await client.destroy();
   process.exit(0);
 });
@@ -171,14 +184,14 @@ process.on('SIGINT', async () => {
 process.on('SIGTERM', async () => {
   debugLog('Received SIGTERM. Shutting down gracefully...');
   isClientReady = false;
-  
+
   if (keepAliveInterval) {
     clearInterval(keepAliveInterval);
   }
   if (eventReminderInterval) {
     clearInterval(eventReminderInterval);
   }
-  
+
   await client.destroy();
   process.exit(0);
 });

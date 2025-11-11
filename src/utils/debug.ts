@@ -11,7 +11,7 @@ const originalConsole = {
   error: console.error,
   warn: console.warn,
   info: console.info,
-  debug: console.debug
+  debug: console.debug,
 };
 
 // Ensure logs directory exists
@@ -42,80 +42,90 @@ function writeToFile(message: string, level: string = 'INFO') {
 // Override console methods to capture all output
 function overrideConsole() {
   console.log = (...args: any[]) => {
-    const message = args.map(arg => {
-      if (typeof arg === 'object') {
-        try {
-          return JSON.stringify(arg, null, 2);
-        } catch {
-          return String(arg);
+    const message = args
+      .map((arg) => {
+        if (typeof arg === 'object') {
+          try {
+            return JSON.stringify(arg, null, 2);
+          } catch {
+            return String(arg);
+          }
         }
-      }
-      return String(arg);
-    }).join(' ');
+        return String(arg);
+      })
+      .join(' ');
 
     writeToFile(message, 'LOG');
     originalConsole.log(...args);
   };
 
   console.error = (...args: any[]) => {
-    const message = args.map(arg => {
-      if (typeof arg === 'object') {
-        try {
-          return JSON.stringify(arg, null, 2);
-        } catch {
-          return String(arg);
+    const message = args
+      .map((arg) => {
+        if (typeof arg === 'object') {
+          try {
+            return JSON.stringify(arg, null, 2);
+          } catch {
+            return String(arg);
+          }
         }
-      }
-      return String(arg);
-    }).join(' ');
+        return String(arg);
+      })
+      .join(' ');
 
     writeToFile(message, 'ERROR');
     originalConsole.error(...args);
   };
 
   console.warn = (...args: any[]) => {
-    const message = args.map(arg => {
-      if (typeof arg === 'object') {
-        try {
-          return JSON.stringify(arg, null, 2);
-        } catch {
-          return String(arg);
+    const message = args
+      .map((arg) => {
+        if (typeof arg === 'object') {
+          try {
+            return JSON.stringify(arg, null, 2);
+          } catch {
+            return String(arg);
+          }
         }
-      }
-      return String(arg);
-    }).join(' ');
+        return String(arg);
+      })
+      .join(' ');
 
     writeToFile(message, 'WARN');
     originalConsole.warn(...args);
   };
 
   console.info = (...args: any[]) => {
-    const message = args.map(arg => {
-      if (typeof arg === 'object') {
-        try {
-          return JSON.stringify(arg, null, 2);
-        } catch {
-          return String(arg);
+    const message = args
+      .map((arg) => {
+        if (typeof arg === 'object') {
+          try {
+            return JSON.stringify(arg, null, 2);
+          } catch {
+            return String(arg);
+          }
         }
-      }
-      return String(arg);
-    }).join(' ');
+        return String(arg);
+      })
+      .join(' ');
 
     writeToFile(message, 'INFO');
     originalConsole.info(...args);
   };
 
   console.debug = (...args: any[]) => {
-    const message = args.map(arg => {
-      if (typeof arg === 'object') {
-        try {
-          return JSON.stringify(arg, null, 2);
-        } catch {
-          return String(arg);
+    const message = args
+      .map((arg) => {
+        if (typeof arg === 'object') {
+          try {
+            return JSON.stringify(arg, null, 2);
+          } catch {
+            return String(arg);
+          }
         }
-      }
-      return String(arg);
-    }).join(' ');
+        return String(arg);
+      })
+      .join(' ');
 
     writeToFile(message, 'DEBUG');
     originalConsole.debug(...args);
@@ -131,22 +141,23 @@ export function debugLog(message: string, ...args: any[]) {
 
     // Format additional arguments
     if (args.length > 0) {
-      const formattedArgs = args.map(arg => {
-        if (typeof arg === 'object') {
-          try {
-            return JSON.stringify(arg, null, 2);
-          } catch {
-            return String(arg);
+      const formattedArgs = args
+        .map((arg) => {
+          if (typeof arg === 'object') {
+            try {
+              return JSON.stringify(arg, null, 2);
+            } catch {
+              return String(arg);
+            }
           }
-        }
-        return String(arg);
-      }).join(' ');
+          return String(arg);
+        })
+        .join(' ');
       fullMessage += ` ${formattedArgs}`;
     }
 
     // Write to console (which will be captured by our override)
     console.log(fullMessage);
-
   } catch (error) {
     // Fallback logging if main logic fails
     originalConsole.error('Debug log error:', error);
@@ -174,19 +185,25 @@ export function rotateDebugLogs(maxSizeInMB: number = 10) {
 
       if (fileSizeInMB > maxSizeInMB) {
         // Create backup and start fresh
-        const backupFile = path.join(LOGS_DIR, `debug.log.backup.${Date.now()}`);
+        const backupFile = path.join(
+          LOGS_DIR,
+          `debug.log.backup.${Date.now()}`,
+        );
         fs.renameSync(DEBUG_LOG_FILE, backupFile);
 
-        console.log(`[${TITLE}] Debug log rotated. Backup created: ${backupFile}`);
+        console.log(
+          `[${TITLE}] Debug log rotated. Backup created: ${backupFile}`,
+        );
 
         // Keep only the last 3 backup files
-        const backupFiles = fs.readdirSync(LOGS_DIR)
-          .filter(file => file.startsWith('debug.log.backup.'))
+        const backupFiles = fs
+          .readdirSync(LOGS_DIR)
+          .filter((file) => file.startsWith('debug.log.backup.'))
           .sort()
           .reverse();
 
         if (backupFiles.length > 3) {
-          backupFiles.slice(3).forEach(file => {
+          backupFiles.slice(3).forEach((file) => {
             fs.unlinkSync(path.join(LOGS_DIR, file));
           });
         }

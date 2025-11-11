@@ -11,10 +11,10 @@ interface PackageJson {
 
 export async function handleVersionCommand(message: Message) {
   const packageJsonPath = path.join(process.cwd(), 'package.json');
-  
+
   const packageData = fs.readFileSync(packageJsonPath, 'utf8');
   const packageJson: PackageJson = JSON.parse(packageData);
-  
+
   const versionMessage = `${packageJson.name} v${packageJson.version}`;
   await message.reply(versionMessage);
   debugLog('Sent version info:', versionMessage);

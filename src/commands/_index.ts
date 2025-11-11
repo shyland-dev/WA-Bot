@@ -92,7 +92,9 @@ export async function handleCommand(message: Message) {
       await handleQrCommand(message);
     } catch (error) {
       debugLog('Error in QR command:', error);
-      await message.reply('❌ An error occurred while generating the QR code. Please try again.');
+      await message.reply(
+        '❌ An error occurred while generating the QR code. Please try again.',
+      );
     }
     return;
   }
@@ -103,7 +105,9 @@ export async function handleCommand(message: Message) {
       await handleEventCreateCommand(message);
     } catch (error) {
       debugLog('Error in event create command:', error);
-      await message.reply('❌ An error occurred while creating the event. Please try again.');
+      await message.reply(
+        '❌ An error occurred while creating the event. Please try again.',
+      );
     }
     return;
   }
@@ -216,7 +220,9 @@ export async function handleCommand(message: Message) {
         await handleQrCommand(message);
       } catch (error) {
         debugLog('Error in QR command:', error);
-        await message.reply('❌ An error occurred while generating the QR code. Please try again.');
+        await message.reply(
+          '❌ An error occurred while generating the QR code. Please try again.',
+        );
       }
       break;
     default:
