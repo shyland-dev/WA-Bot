@@ -64,7 +64,7 @@ client.on('ready', async () => {
   await client.setStatus('Last activation: ' + lastActivation);
 
   // Set bot as ONLINE
-  await client.sendPresenceAvailable();
+  // await client.sendPresenceAvailable(); // Temporarily disabled due to issues with WhatsApp
 
   // Save ready timestamp for uptime tracking
   saveReadyTimestamp();
