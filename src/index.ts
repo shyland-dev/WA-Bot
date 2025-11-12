@@ -58,14 +58,6 @@ client.on('ready', async () => {
   debugLog('Bot is ready and connected to WhatsApp!');
   isClientReady = true;
 
-  const lastActivation = new Date().toLocaleString();
-
-  // Set the bot's status message
-  await client.setStatus('Last activation: ' + lastActivation);
-
-  // Set bot as ONLINE
-  // await client.sendPresenceAvailable(); // Temporarily disabled due to issues with WhatsApp
-
   // Save ready timestamp for uptime tracking
   saveReadyTimestamp();
 
