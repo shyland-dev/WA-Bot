@@ -5,6 +5,7 @@ import { saveReadyTimestamp } from './commands/uptime';
 import { checkEventReminders } from './commands/events';
 import { debugLog, rotateDebugLogs } from './utils/debug';
 import { config } from './utils/config';
+import { startApiServer, setWhatsAppClient } from './api/server';
 
 // Rotate logs on startup if they're too large
 rotateDebugLogs(10);
@@ -74,6 +75,10 @@ client.on('ready', async () => {
   if (eventReminderInterval) {
     clearInterval(eventReminderInterval);
   }
+
+  // Set up API server
+  setWhatsAppClient(client);
+  startApiServer();
 
   // Set up event reminder checking (every 30 seconds)
   eventReminderInterval = setInterval(() => {
