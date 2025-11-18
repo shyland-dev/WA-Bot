@@ -34,12 +34,20 @@ import {
   handleKeepAliveStatusCommand,
 } from './keepAlive';
 
-// Store client instance for commands that need it
+// Store client instance and imAlive function for commands that need them
 let clientInstance: Client | null = null;
+let imAliveFunctionRef: ((msg?: string) => Promise<void>) | null = null;
 
 export function setClientInstance(client: Client) {
   clientInstance = client;
   debugLog('Client instance set for command handler');
+}
+
+export function setImAliveFunction(
+  imAliveFunc: (msg?: string) => Promise<void>,
+) {
+  imAliveFunctionRef = imAliveFunc;
+  debugLog('imAlive function reference set for command handler');
 }
 
 // Helper function to handle API errors
@@ -129,7 +137,20 @@ export async function handleCommand(message: Message) {
   if (message.body.startsWith('/keep-alive-interval ')) {
     debugLog('Keep-alive interval command invoked');
     try {
-      await handleKeepAliveIntervalCommand(message);
+      if (clientInstance && imAliveFunctionRef) {
+        await handleKeepAliveIntervalCommand(
+          message,
+          clientInstance,
+          imAliveFunctionRef,
+        );
+      } else {
+        await message.reply(
+          '❌ Bot not fully initialized. Please try again later.',
+        );
+        debugLog(
+          'Warning: Client or imAlive function not set for keep-alive-interval command',
+        );
+      }
     } catch (error) {
       debugLog('Error in keep-alive-interval command:', error);
       await message.reply(
@@ -220,7 +241,20 @@ export async function handleCommand(message: Message) {
       break;
     case '/keep-alive-interval':
       debugLog('Keep-alive interval command invoked (no value)');
-      await handleKeepAliveIntervalCommand(message);
+      if (clientInstance && imAliveFunctionRef) {
+        await handleKeepAliveIntervalCommand(
+          message,
+          clientInstance,
+          imAliveFunctionRef,
+        );
+      } else {
+        await message.reply(
+          '❌ Bot not fully initialized. Please try again later.',
+        );
+        debugLog(
+          'Warning: Client or imAlive function not set for keep-alive-interval command',
+        );
+      }
       break;
     case '/keep-alive-status':
       debugLog('Keep-alive status command invoked');

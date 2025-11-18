@@ -1,8 +1,13 @@
 import { Client, LocalAuth, Message } from 'whatsapp-web.js';
 import qrcode from 'qrcode-terminal';
-import { handleCommand, setClientInstance } from './commands/_index';
+import {
+  handleCommand,
+  setClientInstance,
+  setImAliveFunction,
+} from './commands/_index';
 import { saveReadyTimestamp } from './commands/uptime';
 import { checkEventReminders } from './commands/events';
+import { setKeepAliveInterval } from './commands/keepAlive';
 import { debugLog, rotateDebugLogs } from './utils/debug';
 import { config } from './utils/config';
 import { startApiServer, setWhatsAppClient } from './api/server';
@@ -113,6 +118,9 @@ client.on('ready', async () => {
       debugLog('Sent keep-alive message to:', config.keepAlive.chatId);
     };
 
+    // Set imAlive function reference for commands
+    setImAliveFunction(imAlive);
+
     // Send initial keep-alive message
     const wwebVersion = await client.getWWebVersion();
     await imAlive(
@@ -126,6 +134,9 @@ client.on('ready', async () => {
       },
       config.keepAlive.intervalMinutes * 60 * 1000,
     );
+
+    // Store interval reference for dynamic updates
+    setKeepAliveInterval(keepAliveInterval);
 
     debugLog(
       `Keep-alive messages set every ${config.keepAlive.intervalMinutes} minutes`,

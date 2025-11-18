@@ -6,6 +6,14 @@ import {
   getEnvVariable,
 } from '../utils/envManager';
 
+// Store reference to the keep-alive interval timer
+let keepAliveIntervalRef: NodeJS.Timeout | null = null;
+
+export function setKeepAliveInterval(interval: NodeJS.Timeout) {
+  keepAliveIntervalRef = interval;
+  debugLog('Keep-alive interval reference stored');
+}
+
 export async function handleKeepAliveCommand(message: Message) {
   try {
     const newValue = toggleEnvBoolean('KEEP_ALIVE');
@@ -36,7 +44,11 @@ export async function handleKeepAliveCommand(message: Message) {
   }
 }
 
-export async function handleKeepAliveIntervalCommand(message: Message) {
+export async function handleKeepAliveIntervalCommand(
+  message: Message,
+  client: any,
+  imAliveFunction: (msg?: string) => Promise<void>,
+) {
   try {
     const minutes = message.body.substring(21).trim(); // Remove '/keep-alive-interval '
 
@@ -74,6 +86,7 @@ export async function handleKeepAliveIntervalCommand(message: Message) {
       );
     }
 
+    // Update .env file
     const success = updateEnvVariable('KEEP_ALIVE_INTERVAL_MINUTES', minutes);
 
     if (!success) {
@@ -81,6 +94,22 @@ export async function handleKeepAliveIntervalCommand(message: Message) {
         '❌ Error updating keep-alive interval. Please check the logs.',
       );
       return;
+    }
+
+    // Clear existing interval if it exists
+    if (keepAliveIntervalRef) {
+      clearInterval(keepAliveIntervalRef);
+      debugLog('Cleared existing keep-alive interval');
+    }
+
+    // Create new interval with updated timing
+    const enabled = getEnvVariable('KEEP_ALIVE');
+    if (enabled === 'true' && client) {
+      keepAliveIntervalRef = setInterval(
+        imAliveFunction,
+        minutesNum * 60 * 1000,
+      );
+      debugLog(`Started new keep-alive interval with ${minutesNum} minutes`);
     }
 
     const hours = Math.floor(minutesNum / 60);
@@ -99,7 +128,8 @@ export async function handleKeepAliveIntervalCommand(message: Message) {
     await message.reply(
       `✅ *Keep-Alive Interval Updated*\n\n` +
         `New interval: *${minutesNum} minutes* (${timeDescription})\n\n` +
-        `⚠️ *Note:* The bot needs to be restarted for this change to take full effect.`,
+        `🔄 *Change applied immediately!* No restart needed.\n` +
+        `💾 Settings saved to .env file.`,
     );
 
     debugLog('Keep-alive interval updated to:', minutes, 'minutes');
