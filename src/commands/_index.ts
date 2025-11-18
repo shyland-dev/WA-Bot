@@ -27,6 +27,11 @@ import {
   handleExpensesTotalCommand,
   handleExpensesResetCommand,
 } from './expenses';
+import {
+  handleKeepAliveCommand,
+  handleKeepAliveIntervalCommand,
+  handleKeepAliveStatusCommand,
+} from './keepAlive';
 
 // Helper function to handle API errors
 async function handleApiError(message: Message, error: any, operation: string) {
@@ -112,6 +117,19 @@ export async function handleCommand(message: Message) {
     return;
   }
 
+  if (message.body.startsWith('/keep-alive-interval ')) {
+    debugLog('Keep-alive interval command invoked');
+    try {
+      await handleKeepAliveIntervalCommand(message);
+    } catch (error) {
+      debugLog('Error in keep-alive-interval command:', error);
+      await message.reply(
+        '❌ An error occurred while updating the interval. Please try again.',
+      );
+    }
+    return;
+  }
+
   if (message.body.startsWith('/api-read ')) {
     debugLog('API read command invoked');
     try {
@@ -177,6 +195,18 @@ export async function handleCommand(message: Message) {
     case '/version':
       debugLog('Version command invoked');
       await handleVersionCommand(message);
+      break;
+    case '/keep-alive':
+      debugLog('Keep-alive command invoked');
+      await handleKeepAliveCommand(message);
+      break;
+    case '/keep-alive-interval':
+      debugLog('Keep-alive interval command invoked (no value)');
+      await handleKeepAliveIntervalCommand(message);
+      break;
+    case '/keep-alive-status':
+      debugLog('Keep-alive status command invoked');
+      await handleKeepAliveStatusCommand(message);
       break;
     case '/event':
       debugLog('Event command invoked');

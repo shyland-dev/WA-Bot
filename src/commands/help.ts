@@ -15,6 +15,11 @@ const HELP_MESSAGE = `Here are the available commands:
 \`/event-dismiss\` - Decline attendance
 \`/event-delete\` - Delete the current active event (admins only)
 
+*Keep-Alive Commands:*
+\`/keep-alive\` - Toggle keep-alive messages on/off
+\`/keep-alive-interval <minutes>\` - Set keep-alive interval
+\`/keep-alive-status\` - Show current keep-alive settings
+
 *API Commands:*
 \`/api-read-all\` - Get all records from the API
 \`/api-read <ID>\` - Get a specific record by ID
