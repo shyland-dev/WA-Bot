@@ -111,7 +111,10 @@ client.on('ready', async () => {
     };
 
     // Send initial keep-alive message
-    await imAlive('🤖 Bot initiated!');
+    const wwebVersion = await client.getWWebVersion();
+    await imAlive(
+      `🤖 Bot initiated! Running WhatsApp Web version: ${wwebVersion}`,
+    );
 
     // Set up keep-alive interval
     keepAliveInterval = setInterval(
