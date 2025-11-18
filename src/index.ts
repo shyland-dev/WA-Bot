@@ -1,6 +1,6 @@
 import { Client, LocalAuth, Message } from 'whatsapp-web.js';
 import qrcode from 'qrcode-terminal';
-import { handleCommand } from './commands/_index';
+import { handleCommand, setClientInstance } from './commands/_index';
 import { saveReadyTimestamp } from './commands/uptime';
 import { checkEventReminders } from './commands/events';
 import { debugLog, rotateDebugLogs } from './utils/debug';
@@ -79,6 +79,9 @@ client.on('ready', async () => {
   // Set up API server
   setWhatsAppClient(client);
   startApiServer();
+
+  // Set client instance for commands
+  setClientInstance(client);
 
   // Set up event reminder checking (every 30 seconds)
   eventReminderInterval = setInterval(() => {

@@ -1,8 +1,9 @@
-import { Message } from 'whatsapp-web.js';
+import { Message, Client } from 'whatsapp-web.js';
 
 import { debugLog } from '../utils/debug';
 import { handleHelpCommand } from './help';
 import { handlePingCommand } from './ping';
+import { handlePongCommand } from './pong';
 import { handleInfoCommand } from './info';
 import { handleSourceCommand } from './source';
 import { handleUptimeCommand } from './uptime';
@@ -32,6 +33,14 @@ import {
   handleKeepAliveIntervalCommand,
   handleKeepAliveStatusCommand,
 } from './keepAlive';
+
+// Store client instance for commands that need it
+let clientInstance: Client | null = null;
+
+export function setClientInstance(client: Client) {
+  clientInstance = client;
+  debugLog('Client instance set for command handler');
+}
 
 // Helper function to handle API errors
 async function handleApiError(message: Message, error: any, operation: string) {
@@ -180,6 +189,10 @@ export async function handleCommand(message: Message) {
       debugLog('Ping command invoked');
       await handlePingCommand(message);
       break;
+    case '/pong':
+      debugLog('Pong command invoked');
+      await handlePongCommand(message);
+      break;
     case '/info':
       debugLog('Info command invoked');
       await handleInfoCommand(message);
@@ -194,7 +207,12 @@ export async function handleCommand(message: Message) {
       break;
     case '/version':
       debugLog('Version command invoked');
-      await handleVersionCommand(message);
+      if (clientInstance) {
+        await handleVersionCommand(message, clientInstance);
+      } else {
+        await message.reply('❌ Client not initialized');
+        debugLog('Warning: Client instance not set for version command');
+      }
       break;
     case '/keep-alive':
       debugLog('Keep-alive command invoked');
